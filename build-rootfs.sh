@@ -8,7 +8,7 @@ if [ ! -z "$SUDO_USER" ]; then
     HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
 fi
 
-mkdir -p ../build && cd ../build
+mkdir -p build && cd build
 
 # Debootstrap options
 arch=arm64
