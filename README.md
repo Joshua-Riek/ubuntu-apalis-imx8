@@ -7,10 +7,9 @@ This is a collection of scripts that are used to build a minimial Ubuntu 20.04 i
 To setup the build environment for the Ubuntu image creation, a Linux host with the following configuration is recommended. A host machine with adequate processing power and disk space is ideal as the build process can be severial gigabytes in size and can take alot of time.
 
 * Intel Core-i7 CPU (>= 8 cores)
-* 16 GB RAM
-* 20 GB free disk space
 * High speed internet
-* OS: Ubuntu 20.04 LTS
+* 20 GB free disk space
+* 16 GB RAM
 
 ## Getting Started
 
