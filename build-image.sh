@@ -22,12 +22,12 @@ if [ ! -f imx-mkimage/iMX8QM/imx-boot ]; then
 fi
 
 # Tar the entire bootfs
-cd bootfs && tar -cpf ../../image/ubuntu-20.04-apalis-imx8.bootfs.tar . && cd ..
-bootfs_size=$(( $(wc -c < ../image/ubuntu-20.04-apalis-imx8.bootfs.tar) / 1024 / 1024 ))
+cd bootfs && tar -cpf ../../image/ubuntu-apalis-imx8.bootfs.tar . && cd ..
+bootfs_size=$(( $(wc -c < ../image/ubuntu-apalis-imx8.bootfs.tar) / 1024 / 1024 ))
 
 # Tar the entire rootfs
-cd rootfs && tar -cpf ../../image/ubuntu-20.04-apalis-imx8.rootfs.tar . && cd ..
-rootfs_size=$(( $(wc -c < ../image/ubuntu-20.04-apalis-imx8.rootfs.tar) / 1024 / 1024 ))
+cd rootfs && tar -cpf ../../image/ubuntu-apalis-imx8.rootfs.tar . && cd ..
+rootfs_size=$(( $(wc -c < ../image/ubuntu-apalis-imx8.rootfs.tar) / 1024 / 1024 ))
 
 # Copy imx boot
 cp imx-mkimage/iMX8QM/imx-boot ../image/imx-boot 
@@ -58,7 +58,7 @@ cat > ../image/image.json << EOF
                         "label": "boot",
                         "filesystem_type": "FAT",
                         "mkfs_options": "",
-                        "filename": "ubuntu-20.04-apalis-imx8.bootfs.tar",
+                        "filename": "ubuntu-apalis-imx8.bootfs.tar",
                         "uncompressed_size": ${bootfs_size}
                     }
                 },
@@ -69,7 +69,7 @@ cat > ../image/image.json << EOF
                         "label": "root",
                         "filesystem_type": "ext4",
                         "mkfs_options": "-E nodiscard",
-                        "filename": "ubuntu-20.04-apalis-imx8.rootfs.tar",
+                        "filename": "ubuntu-apalis-imx8.rootfs.tar",
                         "uncompressed_size": ${rootfs_size}
                     }
                 }
