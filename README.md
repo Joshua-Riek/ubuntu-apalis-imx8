@@ -2,6 +2,33 @@
 
 This is a collection of scripts that are used to build a minimial Ubuntu 20.04 installation for the Apalis iMX8 QuadMax Compute on Module.
 
+## Recommended Hardware
+
+To setup the build environment for the Ubuntu image creation, a Linux host with the following configuration is recommended. A host machine with adequate processing power and disk space is ideal as the build process can be severial gigabytes in size and can take alot of time.
+
+* Intel Core-i7 CPU (>= 8 cores)
+* 16 GB RAM
+* 20 GB free disk space
+* High speed internet
+* OS: Ubuntu 20.04 LTS
+
+## Getting Started
+
+Please update and install the below packages on your host machine. 
+
+```
+$ sudo apt update
+$ sudo apt install build-essential gcc-aarch64-linux-gnu qemu-user-static u-boot-tools binfmt-support debootstrap flex bison libssl-dev
+```
+
+## Project Layout
+
+* build-kernel.sh   - Build the Linux kernel and Device Tree Blobs
+* build-rootfs.sh   - Create the root file system
+* build-imx-boot.sh - Build U-Boot and the imx boot container
+* build-bootfs.sh   - Create the boot file system
+* build-image.sh    - Produce the Ubuntu installation image 
+
 ## Bootlog
 
 ```
