@@ -8,9 +8,9 @@ This is a collection of scripts that are used to build a minimial Ubuntu 20.04 i
 
 To setup the build environment for the Ubuntu 20.04 image creation, a Linux host with the following configuration is recommended. A host machine with adequate processing power and disk space is ideal as the build process can be severial gigabytes in size and can take alot of time.
 
-* Intel Core-i7 CPU (>= 8 cores)
-* High speed internet
-* 20 GB free disk space
+* Intel Core i7 CPU (>= 8 cores)
+* Strong internet connection
+* 10 GB free disk space
 * 16 GB RAM
 
 ## Requirements
@@ -41,6 +41,8 @@ ubuntu-apalis-imx8
 ├── build-imx-boot.sh   # Build U-Boot and the imx boot container
 ├── build-kernel.sh     # Build the Linux kernel and Device Tree Blobs
 ├── build-rootfs.sh     # Create the root file system
+├── patch
+│   └── 701-net-0408-sdk_fman-fix-CONFIG_COMPAT-leak-during-headers-insta.patch
 └── README.md
 ```
 
