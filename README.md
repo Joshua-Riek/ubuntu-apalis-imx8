@@ -18,7 +18,8 @@ To setup the build environment for the Ubuntu 20.04 image creation, a Linux host
 Please install the below packages on your host machine. 
 
 ```
-$ sudo apt-get install -y build-essential gcc-aarch64-linux-gnu qemu-user-static u-boot-tools binfmt-support debootstrap flex bison libssl-dev
+$ sudo apt-get install -y build-essential gcc-aarch64-linux-gnu qemu-user-static u-boot-tools \
+binfmt-support debootstrap flex bison libssl-dev
 ```
 
 ## Building
@@ -37,10 +38,11 @@ $ sudo ./build-all.sh
 ubuntu-apalis-imx8
 ├── build-all.sh
 ├── build-bootfs.sh     # Create the boot file system
-├── build-image.sh      # Produce the Ubuntu installation image 
 ├── build-imx-boot.sh   # Build U-Boot and the imx boot container
 ├── build-kernel.sh     # Build the Linux kernel and Device Tree Blobs
 ├── build-rootfs.sh     # Create the root file system
+├── make-disk.sh        # Write the Ubuntu image to usb/sdcard
+├── make-installer.sh   # Write the Ubuntu installation image to usb/sdcard
 ├── patch
 │   └── 701-net-0408-sdk_fman-fix-CONFIG_COMPAT-leak-during-headers-insta.patch
 └── README.md
