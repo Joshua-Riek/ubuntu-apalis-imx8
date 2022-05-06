@@ -12,4 +12,3 @@ fi
 ./build-rootfs.sh
 ./build-imx-boot.sh
 ./build-bootfs.sh
-./build-image.sh
