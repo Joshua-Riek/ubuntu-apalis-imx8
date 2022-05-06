@@ -120,8 +120,8 @@ update_config=1
 country=US
 
 network={
-     ssid="MetaGuest"
-     psk="TotalGrainOnceCorn"
+     ssid="your_ssid"
+     psk="your_psk"
      key_mgmt=WPA-PSK
 }
 END
@@ -147,3 +147,5 @@ umount -lf $chroot_dir/dev/pts 2> /dev/null || true
 umount -lf $chroot_dir/proc 2> /dev/null || true
 umount -lf $chroot_dir/* 2> /dev/null || true
 
+# Tar the entire rootfs
+cd rootfs && tar -cpf ../ubuntu-apalis-imx8.rootfs.tar . && cd ..

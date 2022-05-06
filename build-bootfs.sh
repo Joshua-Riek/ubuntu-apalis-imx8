@@ -30,28 +30,28 @@ if [ ! -d rootfs ]; then
     exit 1
 fi
 
-mkdir -p bootfs && cd bootfs && mkdir -p overlays
+mkdir -p bootfs && mkdir -p bootfs/overlays
 
 # Copy device tree blobs
-cp ../linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-eval.dtb .
-cp ../linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-ixora-v1.1.dtb  .
-cp ../linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-v1.1-eval.dtb .
-cp ../linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-v1.1-ixora-v1.1.dtb  .
+cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-eval.dtb bootfs
+cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-ixora-v1.1.dtb bootfs
+cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-v1.1-eval.dtb bootfs
+cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-v1.1-ixora-v1.1.dtb bootfs
 
 # Copy hdmi firmware
-cp ../imx-seco/firmware-imx-8.0/firmware/hdmi/cadence/dpfw.bin dpfw.bin
-cp ../imx-seco/firmware-imx-8.0/firmware/hdmi/cadence/hdmitxfw.bin hdmitxfw.bin
+cp imx-seco/firmware-imx-8.0/firmware/hdmi/cadence/dpfw.bin bootfs
+cp imx-seco/firmware-imx-8.0/firmware/hdmi/cadence/hdmitxfw.bin bootfs
 
 # Copy device tree overlays
-cp ../device-tree-overlays/overlays/apalis-*.dtbo overlays
-cp ../device-tree-overlays/overlays/display-*.dtbo overlays
+cp device-tree-overlays/overlays/apalis-*.dtbo bootfs/overlays
+cp device-tree-overlays/overlays/display-*.dtbo bootfs/overlays
 
-# Copy kernel image
-cp ../rootfs/boot/initrd.img-* initrd
-cp ../rootfs/boot/vmlinuz-* vmlinuz
+# Copy kernel and initrd
+cp rootfs/boot/initrd.img-* bootfs/initrd
+cp rootfs/boot/vmlinuz-* bootfs/vmlinuz
 
 # Uboot script
-cat > boot.cmd << EOF
+cat > bootfs/boot.cmd << EOF
 setenv bootargs "console=ttyLP1,115200 console=tty1 pci=nomsi root=/dev/mmcblk0p2 rw rootwait"
 fatload mmc \${mmcdev}:\${mmcpart} \${fdt_addr_r} \${fdtfile}
 fdt addr \${fdt_addr_r} && fdt resize 0x20000
@@ -60,5 +60,8 @@ unzip \${ramdisk_addr_r} \${kernel_addr_r}
 fatload mmc \${mmcdev}:\${mmcpart} \${ramdisk_addr_r} initrd
 booti \${kernel_addr_r} \${ramdisk_addr_r}:\${filesize} \${fdt_addr_r}
 EOF
-mkimage -A arm64 -O linux -T script -C none -n "Boot Script" -d boot.cmd boot.scr
-rm boot.cmd
+mkimage -A arm64 -O linux -T script -C none -n "Boot Script" -d bootfs/boot.cmd bootfs/boot.scr
+rm bootfs/boot.cmd
+
+# Tar the entire bootfs
+cd bootfs && tar -cpf ../ubuntu-apalis-imx8.bootfs.tar . && cd ..
