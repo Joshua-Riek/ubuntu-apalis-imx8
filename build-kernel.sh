@@ -28,5 +28,7 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
 echo "-toradex" > .scmversion
 
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j $(nproc)
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j $(nproc) DTC_FLAGS="-@" dtbs
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j $(nproc) DTC_FLAGS="-@" \
+freescale/imx8qm-apalis-v1.1-eval.dtb freescale/imx8qm-apalis-v1.1-ixora-v1.1.dtb \
+freescale/imx8qm-apalis-eval.dtb freescale/imx8qm-apalis-ixora-v1.1.dtb
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j $(nproc) bindeb-pkg
