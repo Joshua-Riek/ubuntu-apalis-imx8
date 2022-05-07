@@ -89,8 +89,8 @@ cat > ${mount_point}/installer/image.json << EOF
     "config_format": "4",
     "autoinstall": true,
     "name": "Ubuntu 20.04",
-    "description": "Ubuntu 20.04 based on Toradex Linux 5.4.77",
-    "version": "Ubuntu_20.04_Toradex_5.4.77",
+    "description": "Ubuntu 20.04 based on Toradex Linux 5.4.161",
+    "version": "Ubuntu_20.04_Toradex_5.4.161",
     "wrapup_script": "shutdown.sh", 
     "supported_product_ids": [
         "0037",

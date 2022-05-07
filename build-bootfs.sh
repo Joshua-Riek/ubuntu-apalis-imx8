@@ -33,10 +33,8 @@ fi
 mkdir -p bootfs && mkdir -p bootfs/overlays
 
 # Copy device tree blobs
-cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-eval.dtb bootfs
-cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-ixora-v1.1.dtb bootfs
-cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-v1.1-eval.dtb bootfs
-cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-v1.1-ixora-v1.1.dtb bootfs
+cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-*.dtb bootfs
+cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qp-apalis-*.dtb bootfs
 
 # Copy hdmi firmware
 cp imx-seco/firmware-imx-8.0/firmware/hdmi/cadence/dpfw.bin bootfs
@@ -55,6 +53,8 @@ cat > bootfs/boot.cmd << EOF
 setenv bootargs "console=ttyLP1,115200 console=tty1 pci=nomsi root=/dev/mmcblk0p2 rw rootwait"
 fatload mmc \${mmcdev}:\${mmcpart} \${fdt_addr_r} \${fdtfile}
 fdt addr \${fdt_addr_r} && fdt resize 0x20000
+fatload mmc \${mmcdev}:\${mmcpart} \${loadaddr} overlays/apalis-imx8_hdmi_overlay.dtbo
+fdt apply \${loadaddr}
 fatload mmc \${mmcdev}:\${mmcpart} \${ramdisk_addr_r} vmlinuz
 unzip \${ramdisk_addr_r} \${kernel_addr_r}
 fatload mmc \${mmcdev}:\${mmcpart} \${ramdisk_addr_r} initrd
