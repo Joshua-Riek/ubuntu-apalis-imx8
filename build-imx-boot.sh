@@ -65,7 +65,7 @@ cd ..
 
 # Download the and build the device tree overlays
 if [ ! -d device-tree-overlays ]; then
-    git clone --progress -b toradex_5.4-2.1.x-imx git://git.toradex.com/device-tree-overlays.git
+    git clone --progress -b toradex_5.4-2.3.x-imx git://git.toradex.com/device-tree-overlays.git
 fi
 cd device-tree-overlays/overlays
 make CROSS_COMPILE=aarch64-linux-gnu- STAGING_KERNEL_DIR="$(readlink -f ../../linux-toradex)"
