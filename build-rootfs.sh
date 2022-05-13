@@ -44,6 +44,7 @@ mount -t sysfs /sys $chroot_dir/sys
 mount -o bind /dev $chroot_dir/dev
 mount -o bind /dev/pts $chroot_dir/dev/pts
 
+# Copy kernel to the rootfs
 cp *.deb $chroot_dir/tmp
 
 # Run the inital chroot script to setup os env
@@ -52,13 +53,17 @@ cat << EOF | chroot $chroot_dir /bin/bash
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
 
+# Generate localisation files
 locale-gen en_US.UTF-8
 update-locale LC_ALL="en_US.UTF-8"
 
-chmod 1777 /tmp
+# Download package information
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends update
 
-DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends update 
+# Update installed packages
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade 
+
+# Download and install some useful packages
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
 bash-completion live-boot man-db i2c-tools initramfs-tools linux-firmware \
 zip p7zip-full tmux screen nano rsyslog ntfs-3g kbd dosfstools mtools \
@@ -73,13 +78,16 @@ dislocker upower nginx-full libpython2.7 libverto1 expect parted uuid-runtime \
 wpasupplicant git wget build-essential libncurses-dev xz-utils libssl-dev libelf-dev \
 uhubctl
 
+# Clean package cache
+apt-get autoremove -y && apt-get clean -y && apt-get autoclean -y
+
 # Download and extract hdmi firmware
 mkdir -p /tmp/imx-seco && cd /tmp/imx-seco
-wget -nc https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.0.bin
-chmod u+x firmware-imx-8.0.bin
-./firmware-imx-8.0.bin --auto-accept --force
+wget -nc https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.15.bin
+chmod u+x firmware-imx-8.15.bin
+./firmware-imx-8.15.bin --auto-accept --force
 mkdir -p /lib/firmware/imx/hdmi
-cp /tmp/imx-seco/firmware-imx-8.0/firmware/hdmi/cadence/* /lib/firmware/imx/hdmi
+cp /tmp/imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/* /lib/firmware/imx/hdmi
 cd / && rm -rf /tmp/imx-seco
 
 # DNS
@@ -136,9 +144,10 @@ echo -e "root\nroot" | passwd ubuntu
 # Root pass
 echo -e "root\nroot" | passwd
 
+# Install kernel
 dpkg -i /tmp/*.deb
-
 rm -rf /tmp/*
+
 update-initramfs -u
 EOF
 
