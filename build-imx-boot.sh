@@ -20,9 +20,9 @@ mkdir -p imx-seco && cd imx-seco
 wget -nc https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-3.8.1.bin 
 chmod u+x imx-seco-3.8.1.bin
 ./imx-seco-3.8.1.bin --auto-accept --force
-wget -nc https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.0.bin
-chmod u+x firmware-imx-8.0.bin
-./firmware-imx-8.0.bin --auto-accept --force
+wget -nc https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.15.bin
+chmod u+x firmware-imx-8.15.bin
+./firmware-imx-8.15.bin --auto-accept --force
 cd ..
 
 # Download the SCU Firmware (SCFW)
