@@ -137,7 +137,7 @@ EOF
 mkimage -A arm64 -O linux -T script -C none -n "Boot Script" -d ${mount_point}/boot/boot.cmd ${mount_point}/boot/boot.scr
 
 # Copy the rootfs
-tar -cpf ubuntu-apalis-imx8.rootfs.tar -C ${mount_point}/root
+tar -xpf ubuntu-apalis-imx8.rootfs.tar -C ${mount_point}/root
 
 sync --file-system
 sync
