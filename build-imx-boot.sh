@@ -2,10 +2,10 @@
 
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
-ls /root > /dev/null
 
-if [ ! -z "$SUDO_USER" ]; then
-    HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Please run as root"
+    exit 1
 fi
 
 mkdir -p build && cd build
@@ -43,11 +43,10 @@ if [ ! -d u-boot-toradex ]; then
     git clone --progress -b toradex_imx_v2020.04_5.4.70_2.3.0 git://git.toradex.com/u-boot-toradex.git
 fi
 cd u-boot-toradex
-cp ../imx-seco/firmware-imx-8.0/firmware/seco/mx8qm-ahab-container.img mx8qm-ahab-container.img
 cp ../scfw-bin/mx8qm-apalis-scfw-tcm.bin mx8qm-apalis-scfw-tcm.bin
 cp ../imx-atf/build/imx8qm/release/bl31.bin bl31.bin
 make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- apalis-imx8_defconfig
-make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- -j $(nproc) 
+make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- -j "$(nproc)"
 cd ..
 
 # Download and build the boot container

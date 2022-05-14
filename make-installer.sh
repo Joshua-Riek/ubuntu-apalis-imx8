@@ -2,10 +2,10 @@
 
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
-ls /root > /dev/null
 
-if [ ! -z "$SUDO_USER" ]; then
-    HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
+if [ "$(id -u)" -ne 0 ]; then 
+    echo "Please run as root"
+    exit 1
 fi
 
 if test "$#" -ne 1; then
@@ -13,8 +13,8 @@ if test "$#" -ne 1; then
     exit 1
 fi
 
-disk=$1
-if [ ! -b ${disk} ]; then
+disk="$1"
+if [ ! -b "${disk}" ]; then
     echo "Error: '${disk}' is not a block device"
     exit 1
 fi
@@ -53,20 +53,20 @@ fi
 
 # Ensure disk is not mounted
 mount_point=/tmp/mnt
-umount ${disk}* 2> /dev/null || true
+umount "${disk}"* 2> /dev/null || true
 umount ${mount_point}/* 2> /dev/null || true
 mkdir -p ${mount_point}
 
 # Setup partition table
-dd if=/dev/zero of=${disk} count=4096 bs=512
-parted --script ${disk} \
+dd if=/dev/zero of="${disk}" count=4096 bs=512
+parted --script "${disk}" \
 mklabel msdos \
 mkpart primary ext4 8MB 100%
 
 set +e
 
 # Create partitions
-fdisk ${disk} << EOF
+fdisk "${disk}" << EOF
 t
 83
 w
@@ -74,26 +74,26 @@ EOF
 
 set -eE
 
-partprobe ${disk}
+partprobe "${disk}"
 
 sleep 2
 
 # Create filesystems on partitions
-partition_char=`if [[ ${disk: -1} == [0-9] ]]; then echo p; fi`
-dd if=/dev/zero of=${disk}${partition_char}1 bs=1KB count=10 > /dev/null
-mkfs.ext4 -L installer ${disk}${partition_char}1
+partition_char="$(if [[ "${disk: -1}" == [0-9] ]]; then echo p; fi)"
+dd if=/dev/zero of="${disk}${partition_char}1" bs=1KB count=10 > /dev/null
+mkfs.ext4 -L installer "${disk}${partition_char}1"
 
 # Mount partitions
 mkdir -p ${mount_point}/installer
-mount ${disk}${partition_char}1 ${mount_point}/installer
+mount "${disk}${partition_char}1" ${mount_point}/installer
 
 # Copy device tree blobs
 cd linux-toradex/arch/arm64/boot/dts/freescale && tar -cpf ${mount_point}/installer/ubuntu-apalis-imx8.bootfs.tar ./imx8qm-apalis-*.dtb && cd - >/dev/null
 cd linux-toradex/arch/arm64/boot/dts/freescale && tar -rpf ${mount_point}/installer/ubuntu-apalis-imx8.bootfs.tar ./imx8qp-apalis-*.dtb && cd - >/dev/null
 
 # Copy hdmi firmware
-cd imx-seco/firmware-imx-8.0/firmware/hdmi/cadence && tar -rpf ${mount_point}/installer/ubuntu-apalis-imx8.bootfs.tar ./dpfw.bin && cd - >/dev/null
-cd imx-seco/firmware-imx-8.0/firmware/hdmi/cadence && tar -rpf ${mount_point}/installer/ubuntu-apalis-imx8.bootfs.tar ./hdmitxfw.bin&& cd - >/dev/null
+cd imx-seco/firmware-imx-8.15/firmware/hdmi/cadence && tar -rpf ${mount_point}/installer/ubuntu-apalis-imx8.bootfs.tar ./dpfw.bin && cd - >/dev/null
+cd imx-seco/firmware-imx-8.15/firmware/hdmi/cadence && tar -rpf ${mount_point}/installer/ubuntu-apalis-imx8.bootfs.tar ./hdmitxfw.bin&& cd - >/dev/null
 
 # Copy device tree overlays
 cd device-tree-overlays/overlays && tar --transform "s/^./.\/overlays/" -rpf ${mount_point}/installer/ubuntu-apalis-imx8.bootfs.tar ./apalis-*.dtbo && cd - >/dev/null
@@ -238,5 +238,5 @@ sync --file-system
 sync
 
 # Umount partitions
-umount ${disk}${partition_char}1
+umount "${disk}${partition_char}1"
 

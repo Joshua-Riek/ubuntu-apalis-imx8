@@ -2,10 +2,10 @@
 
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
-ls /root > /dev/null
 
-if [ ! -z "$SUDO_USER" ]; then
-    HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
+if [ "$(id -u)" -ne 0 ]; then 
+    echo "Please run as root"
+    exit 1
 fi
 
 if test "$#" -ne 1; then
@@ -13,8 +13,8 @@ if test "$#" -ne 1; then
     exit 1
 fi
 
-disk=$1
-if [ ! -b ${disk} ]; then
+disk="$1"
+if [ ! -b "${disk}" ]; then
     echo "Error: '${disk}' is not a block device"
     exit 1
 fi
@@ -48,13 +48,13 @@ fi
 
 # Ensure disk is not mounted
 mount_point=/tmp/mnt
-umount ${disk}* 2> /dev/null || true
+umount "${disk}"* 2> /dev/null || true
 umount ${mount_point}/* 2> /dev/null || true
 mkdir -p ${mount_point}
 
 # Setup partition table
-dd if=/dev/zero of=${disk} count=4096 bs=512
-parted --script ${disk} \
+dd if=/dev/zero of="${disk}" count=4096 bs=512
+parted --script "${disk}" \
 mklabel msdos \
 mkpart primary fat32 8MB 1GB \
 mkpart primary ext4 1GB 100%
@@ -62,7 +62,7 @@ mkpart primary ext4 1GB 100%
 set +e
 
 # Create partitions
-fdisk ${disk} << EOF
+fdisk "${disk}" << EOF
 t
 1
 e
@@ -76,20 +76,20 @@ EOF
 
 set -eE
 
-partprobe ${disk}
+partprobe "${disk}"
 
 sleep 2
 
 # Create filesystems on partitions
-partition_char=`if [[ ${disk: -1} == [0-9] ]]; then echo p; fi`
-mkfs.vfat -F32 -n boot ${disk}${partition_char}1
-dd if=/dev/zero of=${disk}${partition_char}2 bs=1KB count=10 > /dev/null
-mkfs.ext4 -L root ${disk}${partition_char}2
+partition_char="$(if [[ ${disk: -1} == [0-9] ]]; then echo p; fi)"
+mkfs.vfat -F32 -n boot "${disk}${partition_char}1"
+dd if=/dev/zero of="${disk}${partition_char}2" bs=1KB count=10 > /dev/null
+mkfs.ext4 -L root "${disk}${partition_char}2"
 
 # Mount partitions
 mkdir -p ${mount_point}/{boot,root} 
-mount ${disk}${partition_char}1 ${mount_point}/boot
-mount ${disk}${partition_char}2 ${mount_point}/root
+mount "${disk}${partition_char}1" ${mount_point}/boot
+mount "${disk}${partition_char}2" ${mount_point}/root
 
 # Copy device tree blobs
 cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-*.dtb ${mount_point}/boot
@@ -101,8 +101,8 @@ cp device-tree-overlays/overlays/apalis-*.dtbo ${mount_point}/boot/overlays
 cp device-tree-overlays/overlays/display-*.dtbo ${mount_point}/boot/overlays
 
 # Copy hdmi firmware
-cp imx-seco/firmware-imx-8.0/firmware/hdmi/cadence/dpfw.bin ${mount_point}/boot
-cp imx-seco/firmware-imx-8.0/firmware/hdmi/cadence/hdmitxfw.bin ${mount_point}/boot
+cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/dpfw.bin ${mount_point}/boot
+cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/hdmitxfw.bin ${mount_point}/boot
 
 # Copy kernel and initrd
 cp rootfs/boot/initrd.img-* ${mount_point}/boot/initrd
@@ -143,5 +143,5 @@ sync --file-system
 sync
 
 # Umount partitions
-umount ${disk}${partition_char}1
-umount ${disk}${partition_char}2
+umount "${disk}${partition_char}1"
+umount "${disk}${partition_char}2"

@@ -2,13 +2,18 @@
 
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
-ls /root > /dev/null
 
-if [ ! -z "$SUDO_USER" ]; then
-    HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
+if [ "$(id -u)" -ne 0 ]; then 
+    echo "Please run as root"
+    exit 1
 fi
 
 mkdir -p build && cd build
+
+if [ ! -d linux-toradex ]; then
+    echo "Error: 'linux-toradex' not found"
+    exit 1
+fi
 
 # Debootstrap options
 arch=arm64
@@ -28,7 +33,7 @@ debootstrap --verbose --arch $arch $release $chroot_dir $mirror
 cp -av /usr/bin/qemu-aarch64-static $chroot_dir/usr/bin
 
 # Use a more complete sources.list file 
-cat > $chroot_dir/etc/apt/sources.list<<EOF
+cat > $chroot_dir/etc/apt/sources.list << EOF
 deb ${mirror} ${release} main universe
 deb-src ${mirror} ${release} main universe
 deb ${mirror} ${release}-security main universe
@@ -45,7 +50,7 @@ mount -o bind /dev $chroot_dir/dev
 mount -o bind /dev/pts $chroot_dir/dev/pts
 
 # Copy kernel to the rootfs
-cp *.deb $chroot_dir/tmp
+cp ./*.deb $chroot_dir/tmp
 
 # Run the inital chroot script to setup os env
 cat << EOF | chroot $chroot_dir /bin/bash
