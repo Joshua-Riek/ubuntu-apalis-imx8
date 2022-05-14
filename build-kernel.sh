@@ -2,10 +2,10 @@
 
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
-ls /root > /dev/null
 
-if [ ! -z "$SUDO_USER" ]; then
-    HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
+if [ "$(id -u)" -ne 0 ]; then 
+    echo "Please run as root"
+    exit 1
 fi
 
 mkdir -p build && cd build
@@ -21,5 +21,5 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
 
 echo "-toradex" > .scmversion
 
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- DTC_FLAGS="-@" -j $(nproc) 
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- DTC_FLAGS="-@" -j $(nproc) bindeb-pkg
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- DTC_FLAGS="-@" -j "$(nproc)"
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- DTC_FLAGS="-@" -j "$(nproc)" bindeb-pkg
