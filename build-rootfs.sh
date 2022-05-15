@@ -117,7 +117,7 @@ update-initramfs -u
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
 
 # Hostname
-echo "ubuntu" > /etc/hostname
+echo "apalis-imx8qm" > /etc/hostname
 
 # Networking interfaces
 cat << END > /etc/network/interfaces
@@ -135,7 +135,7 @@ END
 # Hosts file
 cat << END > /etc/hosts
 127.0.0.1       localhost
-127.0.1.1       ubuntu
+127.0.1.1       apalis-imx8qm
 
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
