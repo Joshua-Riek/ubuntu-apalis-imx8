@@ -166,6 +166,21 @@ network={
 }
 END
 
+# Add command to resize serial terminal
+tee -a $chroot_dir/home/ubuntu/.bashrc $chroot_dir/root/.bashrc &>/dev/null << END
+resize() {
+    local IFS='[;' R escape geometry x y
+    echo -en '\e7\e[r\e[999;999H\e[6n\e8'
+    read -rsd R escape geometry
+    x="\${geometry##*;}"; y="\${geometry%%;*}"
+    if [[ "\${COLUMNS}" -eq "\${x}" && "\${LINES}" -eq "\${y}" ]]; then 
+        true
+    else 
+        stty cols "\${x}" rows "\${y}"
+    fi
+}
+END
+
 # Terminal dircolors
 tee $chroot_dir/home/ubuntu/.dircolors $chroot_dir/root/.dircolors &>/dev/null << END
 # below are the color init strings for the basic file types
