@@ -136,8 +136,8 @@ iface lo inet loopback
 allow-hotplug eth0
 iface eth0 inet dhcp
 
-allow-hotplug wlan0
-iface wlan0 inet dhcp
+allow-hotplug wlx34c9f092281a
+iface wlx34c9f092281a inet dhcp
     wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
 END
 
@@ -160,9 +160,17 @@ update_config=1
 country=US
 
 network={
-     ssid="your_ssid"
-     psk="your_psk"
-     key_mgmt=WPA-PSK
+    ssid="your_home_ssid"
+    psk="your_home_psk"
+    key_mgmt=WPA-PSK
+    priority=1
+}
+
+network={
+    ssid="your_work_ssid"
+    psk="your_work_psk"
+    key_mgmt=WPA-PSK
+    priority=2
 }
 END
 
