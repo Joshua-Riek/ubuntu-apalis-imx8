@@ -49,8 +49,8 @@ mount -t sysfs /sys $chroot_dir/sys
 mount -o bind /dev $chroot_dir/dev
 mount -o bind /dev/pts $chroot_dir/dev/pts
 
-# Copy kernel to the rootfs
-cp ./*.deb $chroot_dir/tmp
+# Copy the the kernel, modules, and headers to the rootfs
+cp ./linux-{headers,image,libc}-*.deb $chroot_dir/tmp
 
 # Download and update packages
 cat << EOF | chroot $chroot_dir /bin/bash
@@ -106,13 +106,13 @@ EOF
 # Grab the kernel version
 kernel_version="$(cat linux-toradex/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/')"
 
-# Install kernel and create initramfs
+# Install kernel, modules, headers, and create initramfs
 cat << EOF | chroot $chroot_dir /bin/bash
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
 
-# Install kernel
-dpkg -i /tmp/*.deb
+# Install the kernel, modules, and headers
+dpkg -i /tmp/linux-{headers,image,libc}-*.deb
 rm -rf /tmp/*
 
 # Generate kernel module dependencies
