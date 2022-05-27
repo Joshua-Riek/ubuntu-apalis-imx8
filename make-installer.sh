@@ -112,13 +112,13 @@ test -n ${root_part} || env set root_part 2
 test -n ${kernel_image} || env set kernel_image vmlinuz
 test -n ${ramdisk_image} || env set ramdisk_image initrd
 test -n ${overlay_file} || env set overlay_file overlays/apalis-imx8_hdmi_overlay.dtbo
-test -n ${fdtfile} || env set fdtfile imx8qm-apalis-v1.1-ixora-v1.2.dtb
+test -n ${fdt_file} || env set fdt_file imx8qm-apalis-v1.1-ixora-v1.2.dtb
 
-env set set_bootcmd_dtb 'env set bootcmd_dtb "echo Loading DeviceTree: ${fdtfile}; load ${devtype} ${devnum}:${boot_part} ${fdt_addr_r} ${fdtfile}; fdt addr ${fdt_addr_r} && fdt resize 0x2000"'
+env set set_bootcmd_dtb 'env set bootcmd_dtb "echo Loading DeviceTree: ${fdt_file}; load ${devtype} ${devnum}:${boot_part} ${fdt_addr_r} ${fdt_file}; fdt addr ${fdt_addr_r} && fdt resize 0x2000"'
 env set set_bootcmd_overlays 'env set bootcmd_overlays "echo Applying Overlay: ${overlay_file}; load ${devtype} ${devnum}:${boot_part} ${loadaddr} ${overlay_file}; fdt apply ${loadaddr}"'
 env set set_bootcmd_kernel 'env set bootcmd_kernel "echo Loading Kernel: ${kernel_image}; load ${devtype} ${devnum}:${boot_part} ${ramdisk_addr_r} ${kernel_image}; unzip ${ramdisk_addr_r} ${kernel_addr_r}"'
 env set set_bootcmd_ramdisk 'env set bootcmd_ramdisk "echo Loading Ramdisk: ${ramdisk_image}; load ${devtype} ${devnum}:${boot_part} ${ramdisk_addr_r} ${ramdisk_image}"'
-env set set_bootcmd_args 'env set bootcmd_args "part uuid ${devtype} ${devnum}:${root_part} uuid && env set bootargs console=ttyLP1,115200 console=tty1 pci=nomsi root=PARTUUID=\\${uuid} rw rootwait"'
+env set set_bootcmd_args 'env set bootcmd_args "part uuid ${devtype} ${devnum}:${root_part} uuid && env set bootargs console=ttyLP1,115200 console=tty1 pci=nomsi root=PARTUUID=\\${uuid} rootfstype=ext4 rootwait rw"'
 env set set_bootcmd_boot 'env set bootcmd_boot "echo Bootargs: \\${bootargs} && booti ${kernel_addr_r} ${ramdisk_addr_r}:${filesize} ${fdt_addr_r}"'
 env set set_scriptcmd_load 'env set scriptcmd_load "setexpr found_scriptaddr ${scriptaddr} + 0x10000; if load ${devtype} ${devnum}:${boot_part} \\${found_scriptaddr} boot.scr; then source \\${found_scriptaddr}; fi"'
 
@@ -126,17 +126,21 @@ env set bootcmd_prepare 'run set_bootcmd_dtb && run set_bootcmd_args && run set_
 env set bootcmd_run 'run bootcmd_dtb && run bootcmd_overlays && run bootcmd_args && run bootcmd_kernel && run bootcmd_ramdisk && run bootcmd_boot; echo "Booting from ${devtype} failed!" && false'
 
 usb start
-for devtype in usb mmc; do 
-    for devnum in 1 0; do
-        if ${devtype} dev ${devnum}; then
-            if test ${devtype} = mmc && test ${devnum} -eq 0; then
-                run bootcmd_prepare && run bootcmd_run
-            else
-                run set_scriptcmd_load && run scriptcmd_load
-            fi 
-        fi
+if test -n ${found_scriptaddr}; then
+    run bootcmd_prepare && run bootcmd_run
+else
+    for devtype in usb mmc; do 
+        for devnum in 1 0; do
+            if ${devtype} dev ${devnum}; then
+                if test ${devtype} = mmc && test ${devnum} -eq 0; then
+                    run bootcmd_prepare && run bootcmd_run
+                else
+                    run set_scriptcmd_load && run scriptcmd_load
+                fi 
+            fi
+        done
     done
-done
+fi
 EOF
 mkimage -A arm64 -O linux -T script -C none -n "Boot Script" -d ${mount_point}/installer/boot.cmd ${mount_point}/installer/boot.scr
 cd ${mount_point}/installer && tar -rpf ${mount_point}/installer/ubuntu-apalis-imx8.bootfs.tar ./boot.scr && cd - >/dev/null
