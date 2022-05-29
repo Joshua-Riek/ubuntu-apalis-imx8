@@ -1,0 +1,13 @@
+diff --git a/drivers/spi/spi-imx.c b/drivers/spi/spi-imx.c
+index c244adb02915..d322123d472f 100644
+--- a/drivers/spi/spi-imx.c
++++ b/drivers/spi/spi-imx.c
+@@ -1047,7 +1047,7 @@ static struct spi_imx_devtype_data imx6ul_ecspi_devtype_data = {
+ 	.rx_available = mx51_ecspi_rx_available,
+ 	.reset = mx51_ecspi_reset,
+ 	.setup_wml = mx51_setup_wml,
+-	.fifo_size = 64,
++	.fifo_size = 256,
+ 	.has_dmamode = true,
+ 	.dynamic_burst = true,
+ 	.has_slavemode = true,
