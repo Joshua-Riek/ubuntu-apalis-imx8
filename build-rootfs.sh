@@ -444,6 +444,10 @@ sed -i 's/#force_color_prompt=yes/color_prompt=yes/g' ${chroot_dir}/home/ubuntu/
 mkdir -p ${chroot_dir}/lib/firmware/imx/hdmi
 cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/* ${chroot_dir}/lib/firmware/imx/hdmi
 
+# Copy the vpu firmware
+mkdir -p ${chroot_dir}/lib/firmware/vpu
+cp imx-seco/firmware-imx-8.15/firmware/vpu/* ${chroot_dir}/lib/firmware/vpu
+
 # Umount the temporary API filesystems
 umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
 umount -lf ${chroot_dir}/proc 2> /dev/null || true
