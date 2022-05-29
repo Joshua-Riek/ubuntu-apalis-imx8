@@ -22,18 +22,18 @@ mirror=http://ports.ubuntu.com/ubuntu-ports
 chroot_dir=rootfs
 
 # Clean chroot dir and make sure folder is not mounted
-umount -lf $chroot_dir/dev/pts 2> /dev/null || true
-umount -lf $chroot_dir/proc 2> /dev/null || true
-umount -lf $chroot_dir/* 2> /dev/null || true
-rm -rf $chroot_dir
-mkdir -p $chroot_dir
+umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
+umount -lf ${chroot_dir}/proc 2> /dev/null || true
+umount -lf ${chroot_dir}/* 2> /dev/null || true
+rm -rf ${chroot_dir}
+mkdir -p ${chroot_dir}
 
 # Install the base system into a directory 
-debootstrap --verbose --arch $arch $release $chroot_dir $mirror
-cp -av /usr/bin/qemu-aarch64-static $chroot_dir/usr/bin
+debootstrap --verbose --arch ${arch} ${release} ${chroot_dir} ${mirror}
+cp -av /usr/bin/qemu-aarch64-static ${chroot_dir}/usr/bin
 
 # Use a more complete sources.list file 
-cat > $chroot_dir/etc/apt/sources.list << EOF
+cat > ${chroot_dir}/etc/apt/sources.list << EOF
 deb ${mirror} ${release} main universe
 deb-src ${mirror} ${release} main universe
 deb ${mirror} ${release}-security main universe
@@ -43,17 +43,17 @@ deb-src ${mirror} ${release}-updates main universe
 EOF
 
 # Mount the temporary API filesystems
-mkdir -p $chroot_dir/{proc,sys,run,dev,dev/pts}
-mount -t proc /proc $chroot_dir/proc
-mount -t sysfs /sys $chroot_dir/sys
-mount -o bind /dev $chroot_dir/dev
-mount -o bind /dev/pts $chroot_dir/dev/pts
+mkdir -p ${chroot_dir}/{proc,sys,run,dev,dev/pts}
+mount -t proc /proc ${chroot_dir}/proc
+mount -t sysfs /sys ${chroot_dir}/sys
+mount -o bind /dev ${chroot_dir}/dev
+mount -o bind /dev/pts ${chroot_dir}/dev/pts
 
 # Copy the the kernel, modules, and headers to the rootfs
-cp ./linux-{headers,image,libc}-*.deb $chroot_dir/tmp
+cp ./linux-{headers,image,libc}-*.deb ${chroot_dir}/tmp
 
 # Download and update packages
-cat << EOF | chroot $chroot_dir /bin/bash
+cat << EOF | chroot ${chroot_dir} /bin/bash
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
 
@@ -88,7 +88,7 @@ apt-get autoremove -y && apt-get clean -y && apt-get autoclean -y
 EOF
 
 # Create user accounts
-cat << EOF | chroot $chroot_dir /bin/bash
+cat << EOF | chroot ${chroot_dir} /bin/bash
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
 
@@ -103,11 +103,52 @@ echo -e "root\nroot" | passwd ubuntu
 echo -e "root\nroot" | passwd
 EOF
 
+# Initramfs boot script to update fstab
+cat > ${chroot_dir}/etc/initramfs-tools/scripts/init-bottom/update-fstab.sh << 'EOF'
+#!/bin/sh
+
+PREREQ=""
+prereqs()
+{
+    echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+    prereqs
+    exit 0
+    ;;
+esac
+
+. /scripts/functions
+
+# Get root block device
+disk="$(mount | grep " $rootmnt " | cut -d " " -f 1 | sed "s/[0-9]*$//")"
+
+# Panic if block devices dont exist
+if [ ! -b "${disk}1" ]; then
+    panic "${disk}1 does not exist"
+fi
+if [ ! -b "${disk}2" ]; then
+    panic "${disk}2 does not exist"
+fi
+
+# Write the new fstab entries to the root device
+cat > $rootmnt/etc/fstab << END
+# <device>  <dir>           <type>  <options>   <dump>  <fsck>
+${disk}1    /boot/firmware  vfat    defaults    0       2
+${disk}2    /               ext4    defaults    0       1
+END
+
+exit 0
+EOF
+chmod +x ${chroot_dir}/etc/initramfs-tools/scripts/init-bottom/update-fstab.sh
+
 # Grab the kernel version
 kernel_version="$(cat linux-toradex/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/')"
 
 # Install kernel, modules, headers, and create initramfs
-cat << EOF | chroot $chroot_dir /bin/bash
+cat << EOF | chroot ${chroot_dir} /bin/bash
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
 
@@ -123,13 +164,13 @@ update-initramfs -u
 EOF
 
 # DNS
-echo "nameserver 8.8.8.8" > $chroot_dir/etc/resolv.conf
+echo "nameserver 8.8.8.8" > ${chroot_dir}/etc/resolv.conf
 
 # Hostname
-echo "apalis-imx8qm" > $chroot_dir/etc/hostname
+echo "apalis-imx8qm" > ${chroot_dir}/etc/hostname
 
 # Networking interfaces
-cat > $chroot_dir/etc/network/interfaces << END
+cat > ${chroot_dir}/etc/network/interfaces << END
 auto lo
 iface lo inet loopback
 
@@ -142,7 +183,7 @@ iface wlx34c9f092281a inet dhcp
 END
 
 # Hosts file
-cat > $chroot_dir/etc/hosts << END
+cat > ${chroot_dir}/etc/hosts << END
 127.0.0.1       localhost
 127.0.1.1       apalis-imx8qm
 
@@ -154,7 +195,7 @@ ff02::3         ip6-allhosts
 END
 
 # WIFI
-cat > $chroot_dir/etc/wpa_supplicant/wpa_supplicant.conf << END
+cat > ${chroot_dir}/etc/wpa_supplicant/wpa_supplicant.conf << END
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 country=US
@@ -175,7 +216,7 @@ network={
 END
 
 # Add command to resize serial terminal
-tee -a $chroot_dir/home/ubuntu/.bashrc $chroot_dir/root/.bashrc &>/dev/null << END
+tee -a ${chroot_dir}/home/ubuntu/.bashrc ${chroot_dir}/root/.bashrc &>/dev/null << END
 resize() {
     local IFS='[;' R escape geometry x y
     echo -en '\e7\e[r\e[999;999H\e[6n\e8'
@@ -190,7 +231,7 @@ resize() {
 END
 
 # Terminal dircolors
-tee $chroot_dir/home/ubuntu/.dircolors $chroot_dir/root/.dircolors &>/dev/null << END
+tee ${chroot_dir}/home/ubuntu/.dircolors ${chroot_dir}/root/.dircolors &>/dev/null << END
 # Core formats
 RESET 0
 DIR 01;34
@@ -397,16 +438,16 @@ TERM xterm-color
 TERM xterm-debian
 TERM xterm-kitty
 END
-sed -i 's/#force_color_prompt=yes/color_prompt=yes/g' $chroot_dir/home/ubuntu/.bashrc
+sed -i 's/#force_color_prompt=yes/color_prompt=yes/g' ${chroot_dir}/home/ubuntu/.bashrc
 
 # Copy the hdmi firmware
-mkdir -p $chroot_dir/lib/firmware/imx/hdmi
-cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/* $chroot_dir/lib/firmware/imx/hdmi
+mkdir -p ${chroot_dir}/lib/firmware/imx/hdmi
+cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/* ${chroot_dir}/lib/firmware/imx/hdmi
 
 # Umount the temporary API filesystems
-umount -lf $chroot_dir/dev/pts 2> /dev/null || true
-umount -lf $chroot_dir/proc 2> /dev/null || true
-umount -lf $chroot_dir/* 2> /dev/null || true
+umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
+umount -lf ${chroot_dir}/proc 2> /dev/null || true
+umount -lf ${chroot_dir}/* 2> /dev/null || true
 
 # Tar the entire rootfs
 cd rootfs && tar -cpf ../ubuntu-apalis-imx8.rootfs.tar . && cd ..
