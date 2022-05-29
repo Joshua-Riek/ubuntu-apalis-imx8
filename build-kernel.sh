@@ -15,6 +15,12 @@ if [ ! -d linux-toradex ]; then
     git clone --progress -b toradex_5.4-2.3.x-imx git://git.toradex.com/linux-toradex.git
 fi
 cd linux-toradex
+
+# Apply git patch if not already applied
+if git apply --check ../../patch/001-increase-spi-fifo-size.patch > /dev/null 2>&1; then
+    git apply ../../patch/001-increase-spi-fifo-size.patch
+fi
+
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- distclean
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
 ./scripts/config --set-val CONFIG_DEBUG_INFO n
