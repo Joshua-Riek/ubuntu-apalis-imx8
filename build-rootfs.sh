@@ -103,51 +103,10 @@ echo -e "root\nroot" | passwd ubuntu
 echo -e "root\nroot" | passwd
 EOF
 
-# Initramfs boot script to update fstab
-cat > ${chroot_dir}/etc/initramfs-tools/scripts/init-bottom/update-fstab.sh << 'EOF'
-#!/bin/sh
-
-PREREQ=""
-prereqs()
-{
-    echo "$PREREQ"
-}
-
-case $1 in
-prereqs)
-    prereqs
-    exit 0
-    ;;
-esac
-
-. /scripts/functions
-
-# Get root block device
-disk="$(mount | grep " $rootmnt " | cut -d " " -f 1 | sed "s/[0-9]*$//")"
-
-# Panic if block devices dont exist
-if [ ! -b "${disk}1" ]; then
-    panic "${disk}1 does not exist"
-fi
-if [ ! -b "${disk}2" ]; then
-    panic "${disk}2 does not exist"
-fi
-
-# Write the new fstab entries to the root device
-cat > $rootmnt/etc/fstab << END
-# <device>  <dir>           <type>  <options>   <dump>  <fsck>
-${disk}1    /boot/firmware  vfat    defaults    0       2
-${disk}2    /               ext4    defaults    0       1
-END
-
-exit 0
-EOF
-chmod +x ${chroot_dir}/etc/initramfs-tools/scripts/init-bottom/update-fstab.sh
-
 # Grab the kernel version
 kernel_version="$(cat linux-toradex/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/')"
 
-# Install kernel, modules, headers, and create initramfs
+# Install kernel, modules, and headers
 cat << EOF | chroot ${chroot_dir} /bin/bash
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
@@ -158,9 +117,6 @@ rm -rf /tmp/*
 
 # Generate kernel module dependencies
 depmod -a ${kernel_version}
-
-# Update initramfs
-update-initramfs -u
 EOF
 
 # DNS
@@ -214,6 +170,56 @@ network={
     priority=2
 }
 END
+
+# Initramfs boot script to update fstab
+cat > ${chroot_dir}/etc/initramfs-tools/scripts/init-bottom/update-fstab.sh << 'EOF'
+#!/bin/sh
+
+PREREQ=""
+prereqs()
+{
+    echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+    prereqs
+    exit 0
+    ;;
+esac
+
+. /scripts/functions
+
+# Get root block device and remove last partition number
+disk="$(mount | grep " ${rootmnt} " | cut -d " " -f 1 | sed "s/[0-9]*$//")"
+
+# Get the partition character identifier
+if [[ "$(echo ${disk} | awk '{print substr($0,length($0),1)}')" == p ]]; then
+    if [[ "$(echo ${disk} | awk '{print substr($0,length($0)-1,1)}')" == [0-9] ]]; then
+        disk="$(echo ${disk} | awk '{print substr($0,1,length($0)-1)}')"
+    fi
+fi
+partition_char="$(if [[ "$(echo ${disk} | awk '{print substr($0,length($0),1)}')" == [0-9] ]]; then echo p; fi)"
+
+# Panic if block devices dont exist
+if [ ! -b "${disk}${partition_char}1" ]; then
+    echo "${disk}${partition_char}1 does not exist"
+fi
+
+if [ ! -b "${disk}${partition_char}2" ]; then
+    echo "${disk}${partition_char}2 does not exist"
+fi
+
+# Write the new fstab entries to the root device
+cat > $rootmnt/etc/fstab << END
+# <device>                  <dir>           <type>  <options>   <dump>  <fsck>
+${disk}${partition_char}1   /boot/firmware  vfat    defaults    0       2
+${disk}${partition_char}2   /               ext4    defaults    0       1
+END
+
+exit 0
+EOF
+chmod +x ${chroot_dir}/etc/initramfs-tools/scripts/init-bottom/update-fstab.sh
 
 # Add command to resize serial terminal
 tee -a ${chroot_dir}/home/ubuntu/.bashrc ${chroot_dir}/root/.bashrc &>/dev/null << END
@@ -447,6 +453,15 @@ cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/* ${chroot_dir}/lib/firmware
 # Copy the vpu firmware
 mkdir -p ${chroot_dir}/lib/firmware/vpu
 cp imx-seco/firmware-imx-8.15/firmware/vpu/* ${chroot_dir}/lib/firmware/vpu
+
+# Update the initramfs
+cat << EOF | chroot ${chroot_dir} /bin/bash
+set -eE 
+trap 'echo Error: in $0 on line $LINENO' ERR
+
+# Update initramfs
+update-initramfs -u
+EOF
 
 # Umount the temporary API filesystems
 umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
