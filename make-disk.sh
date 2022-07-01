@@ -135,7 +135,7 @@ load ${devtype} ${devnum}:${boot_part} ${ramdisk_addr_r} ${kernel_image}
 unzip ${ramdisk_addr_r} ${kernel_addr_r}
 
 echo "Loading Ramdisk: ${ramdisk_image}"
-load mmc 0:1 ${ramdisk_addr_r} ${ramdisk_image}
+load ${devtype} ${devnum}:${boot_part} ${ramdisk_addr_r} ${ramdisk_image}
 
 echo "Bootargs: ${bootargs}"
 booti ${kernel_addr_r} ${ramdisk_addr_r}:${filesize} ${fdt_addr_r}
