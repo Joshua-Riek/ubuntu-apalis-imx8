@@ -10,11 +10,6 @@ fi
 
 mkdir -p build && cd build
 
-if [ ! -d linux-toradex ]; then
-    echo "Error: 'linux-toradex' not found"
-    exit 1
-fi
-
 # Download and extract the Security Controller (SECO) Firmware
 mkdir -p imx-seco && cd imx-seco
 wget -nc https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-3.8.1.bin 
@@ -60,12 +55,3 @@ cp ../imx-atf/build/imx8qm/release/bl31.bin iMX8QM/bl31.bin
 cp ../u-boot-toradex/u-boot.bin iMX8QM/u-boot.bin
 make SOC=iMX8QM CROSS_COMPILE=aarch64-linux-gnu- flash_b0
 cp iMX8QM/flash.bin iMX8QM/imx-boot
-cd ..
-
-# Download the and build the device tree overlays
-if [ ! -d device-tree-overlays ]; then
-    git clone --progress -b toradex_5.4-2.3.x-imx git://git.toradex.com/device-tree-overlays.git
-fi
-cd device-tree-overlays/overlays
-make CROSS_COMPILE=aarch64-linux-gnu- STAGING_KERNEL_DIR="$(readlink -f ../../linux-toradex)"
-cd ..
