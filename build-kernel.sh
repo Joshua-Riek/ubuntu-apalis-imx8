@@ -12,7 +12,7 @@ mkdir -p build && cd build
 
 # Download the toradex linux kernel source
 if [ ! -d linux-toradex ]; then
-    git clone --progress -b toradex_5.4-2.3.x-imx git://git.toradex.com/linux-toradex.git
+    git clone --depth=1 --progress -b toradex_5.4-2.3.x-imx git://git.toradex.com/linux-toradex.git
 fi
 cd linux-toradex
 
@@ -33,7 +33,7 @@ cd ..
 
 # Download and build the device tree overlays
 if [ ! -d device-tree-overlays ]; then
-    git clone --progress -b toradex_5.4-2.3.x-imx git://git.toradex.com/device-tree-overlays.git
+    git clone --depth=1 --progress -b toradex_5.4-2.3.x-imx git://git.toradex.com/device-tree-overlays.git
 fi
 cd device-tree-overlays/overlays
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- STAGING_KERNEL_DIR="$(readlink -f ../../linux-toradex)"

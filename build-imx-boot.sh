@@ -27,7 +27,7 @@ cd ..
 
 # Download and build the ARM Trusted Firmware (ATF)
 if [ ! -d imx-atf ]; then
-    git clone --progress -b toradex_imx_5.4.70_2.3.0 git://git.toradex.com/imx-atf.git 
+    git clone --depth=1 --progress -b toradex_imx_5.4.70_2.3.0 git://git.toradex.com/imx-atf.git 
 fi
 cd imx-atf
 make PLAT=imx8qm CROSS_COMPILE=aarch64-linux-gnu- bl31
@@ -35,7 +35,7 @@ cd ..
 
 # Download and build u-boot
 if [ ! -d u-boot-toradex ]; then
-    git clone --progress -b toradex_imx_v2020.04_5.4.70_2.3.0 git://git.toradex.com/u-boot-toradex.git
+    git clone --depth=1 --progress -b toradex_imx_v2020.04_5.4.70_2.3.0 git://git.toradex.com/u-boot-toradex.git
 fi
 cd u-boot-toradex
 if git apply --check ../../patches/u-boot-toradex/0001-usb-first-boot-target.patch > /dev/null 2>&1; then
@@ -49,7 +49,7 @@ cd ..
 
 # Download and build the boot container
 if [ ! -d imx-mkimage ]; then
-    git clone --progress -b imx_5.4.70_2.3.0 https://source.codeaurora.org/external/imx/imx-mkimage/
+    git clone --depth=1 --progress -b imx_5.4.70_2.3.0 https://source.codeaurora.org/external/imx/imx-mkimage/
 fi
 cd imx-mkimage
 cp ../imx-seco/imx-seco-3.8.1/firmware/seco/mx8qmb0-ahab-container.img iMX8QM/mx8qmb0-ahab-container.img
