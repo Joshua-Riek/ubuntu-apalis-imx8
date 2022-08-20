@@ -32,7 +32,17 @@ cd ubuntu-apalis-imx8
 sudo ./build.sh
 ```
 
-## Flash removable media
+## Flash emmc
+
+To flash the Ubuntu 20.04 preinstalled image to emmc:
+
+```
+sudo ./flash.sh ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
+```
+
+> This assumes that you have connected the carrier board USB OTG port to your Linux host machine and have entered recovery mode on the device.
+
+## Flash Removable Media
 
 To flash the Ubuntu 20.04 preinstalled image to removable media:
 
