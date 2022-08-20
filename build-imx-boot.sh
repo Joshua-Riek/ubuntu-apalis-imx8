@@ -38,6 +38,9 @@ if [ ! -d u-boot-toradex ]; then
     git clone --progress -b toradex_imx_v2020.04_5.4.70_2.3.0 git://git.toradex.com/u-boot-toradex.git
 fi
 cd u-boot-toradex
+if git apply --check ../../patches/u-boot-toradex/0001-usb-first-boot-target.patch > /dev/null 2>&1; then
+    git apply ../../patches/u-boot-toradex/0001-usb-first-boot-target.patch
+fi
 cp ../scfw-bin/mx8qm-apalis-scfw-tcm.bin mx8qm-apalis-scfw-tcm.bin
 cp ../imx-atf/build/imx8qm/release/bl31.bin bl31.bin
 make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- apalis-imx8_defconfig

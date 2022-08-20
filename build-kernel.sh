@@ -17,8 +17,8 @@ fi
 cd linux-toradex
 
 # Apply git patch if not already applied
-if git apply --check ../../patch/001-increase-spi-fifo-size.patch > /dev/null 2>&1; then
-    git apply ../../patch/001-increase-spi-fifo-size.patch
+if git apply --check ../../patches/linux-toradex/0001-increase-spi-fifo-size.patch > /dev/null 2>&1; then
+    git apply ../../patches/linux-toradex/0001-increase-spi-fifo-size.patch
 fi
 
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- distclean

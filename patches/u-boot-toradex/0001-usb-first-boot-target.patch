@@ -1,0 +1,16 @@
+diff --git a/include/configs/apalis-imx8.h b/include/configs/apalis-imx8.h
+index 5532f8e03f..de962d48cd 100644
+--- a/include/configs/apalis-imx8.h
++++ b/include/configs/apalis-imx8.h
+@@ -73,10 +73,10 @@
+ 	"m4boot_1=run loadm4image_1; dcache flush; bootaux ${loadaddr} 1\0" \
+ 
+ #define BOOT_TARGET_DEVICES(func) \
++	func(USB, usb, 0) \
+ 	func(MMC, mmc, 1) \
+ 	func(MMC, mmc, 2) \
+ 	func(MMC, mmc, 0) \
+-	func(USB, usb, 0) \
+ 	func(DHCP, dhcp, na)
+ #include <config_distro_bootcmd.h>
+ 
