@@ -8,7 +8,34 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+if test "$#" -ne 1; then
+    echo "Usage: $0 filename.img.xz"
+    exit 1
+fi
+
+img="$(readlink -f "$1")"
+if [ ! -f "${img}" ]; then
+    echo "Error: $1 does not exist"
+    exit 1
+fi
+
 mkdir -p build && cd build
+
+# Ensure xz archive
+filename="$(basename "${img}")"
+if [ "${filename##*.}" != "xz" ]; then
+    echo "Error: ${filename} must be an xz archive"
+fi
+
+xz -dc -T0 "${img}" > "${filename%.*}"
+img="$(readlink -f "${filename%.*}")"
+
+# Ensure img file
+filename="$(basename "${img}")"
+if [ "${filename##*.}" != "img" ]; then
+    echo "Error: ${filename} must be an disk image file"
+    exit 1
+fi
 
 # Download the Universal Update Utility (uuu)
 if [ ! -f uuu/uuu ]; then
@@ -36,9 +63,11 @@ FB: ucmd setenv mmcdev 0
 FB: ucmd mmc dev 0
 
 # Flash the bootloader and os image to emmc
-FB: flash -raw2sparse all ubuntu-20.04-preinstalled-server-custom-arm64-apalis.img
+FB: flash -raw2sparse all "${img}"
 FB: flash bootloader imx-mkimage/iMX8QM/imx-boot
 FB: done
 EOF
 
 ./uuu/uuu -b uuu/flash.uuu
+
+rm -f "${img}"
