@@ -73,10 +73,10 @@ DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends dist-upgrade
 # Download and install generic packages
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
 bash-completion man-db manpages nano gnupg initramfs-tools linux-firmware \
-ubuntu-drivers-common dosfstools mtools parted ntfs-3g zip p7zip-full atop \
-htop iotop pciutils lshw lsof cryptsetup exfat-fuse hwinfo dmidecode pigz \
+ubuntu-drivers-common ubuntu-server dosfstools mtools parted ntfs-3g zip atop \
+p7zip-full htop iotop pciutils lshw lsof cryptsetup exfat-fuse hwinfo dmidecode \
 net-tools wireless-tools openssh-client openssh-server wpasupplicant ifupdown \
-wget curl grub-common grub2-common grub-efi-arm64 grub-efi-arm64-bin
+pigz wget curl grub-common grub2-common grub-efi-arm64 grub-efi-arm64-bin
 
 # Clean package cache
 apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
