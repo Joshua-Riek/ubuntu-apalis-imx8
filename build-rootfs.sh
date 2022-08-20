@@ -65,42 +65,21 @@ update-locale LC_ALL="en_US.UTF-8"
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends update
 
 # Update installed packages
-DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade 
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade
 
-# System packages
+# Update installed packages and dependencies
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends dist-upgrade
+
+# Download and install generic packages
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
 bash-completion man-db manpages nano gnupg initramfs-tools linux-firmware \
 ubuntu-drivers-common dosfstools mtools parted ntfs-3g zip p7zip-full atop \
 htop iotop pciutils lshw lsof cryptsetup exfat-fuse hwinfo dmidecode pigz \
-wget curl
-
-# Developer packages
-DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
-git binutils build-essential bc bison cmake flex libssl-dev device-tree-compiler \
-i2c-tools u-boot-tools binfmt-support
-
-# Networking packages
-DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
-net-tools wireless-tools openssh-client openssh-server wpasupplicant ifupdown
+net-tools wireless-tools openssh-client openssh-server wpasupplicant ifupdown \
+wget curl grub-common grub2-common grub-efi-arm64 grub-efi-arm64-bin
 
 # Clean package cache
-apt-get autoremove -y && apt-get clean -y && apt-get autoclean -y
-EOF
-
-# Create user accounts
-cat << EOF | chroot ${chroot_dir} /bin/bash
-set -eE 
-trap 'echo Error: in $0 on line $LINENO' ERR
-
-# Setup user account
-adduser --shell /bin/bash --gecos ubuntu --disabled-password ubuntu
-usermod -a -G sudo ubuntu
-chown -R ubuntu:ubuntu /home/ubuntu
-mkdir -m 700 /home/ubuntu/.ssh
-echo -e "root\nroot" | passwd ubuntu
-
-# Root pass
-echo -e "root\nroot" | passwd
+apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
 EOF
 
 # Grab the kernel version
@@ -117,6 +96,30 @@ rm -rf /tmp/*
 
 # Generate kernel module dependencies
 depmod -a ${kernel_version}
+update-initramfs -c -k ${kernel_version}
+
+# Create kernel and component symlinks
+cd /boot
+ln -s initrd.img-${kernel_version} initrd.img
+ln -s vmlinuz-${kernel_version} vmlinuz
+ln -s System.map-${kernel_version} System.map
+ln -s config-${kernel_version} config
+EOF
+
+# Create user accounts
+cat << EOF | chroot ${chroot_dir} /bin/bash
+set -eE 
+trap 'echo Error: in $0 on line $LINENO' ERR
+
+# Setup user account
+adduser --shell /bin/bash --gecos ubuntu --disabled-password ubuntu
+usermod -a -G sudo ubuntu
+chown -R ubuntu:ubuntu /home/ubuntu
+mkdir -m 700 /home/ubuntu/.ssh
+echo -e "root\nroot" | passwd ubuntu
+
+# Root pass
+echo -e "root\nroot" | passwd
 EOF
 
 # DNS
@@ -157,8 +160,8 @@ update_config=1
 country=US
 
 network={
-    ssid="your_home_ssid"
-    psk="your_home_psk"
+    ssid="Skynet_Global_Defense_Network"
+    psk="usf1991spc2019ucf2021"
     key_mgmt=WPA-PSK
     priority=1
 }
@@ -171,70 +174,120 @@ network={
 }
 END
 
-# Initramfs boot script to update fstab
-cat > ${chroot_dir}/etc/initramfs-tools/scripts/init-bottom/update-fstab.sh << 'EOF'
-#!/bin/sh
+# Expand root filesystem on first boot
+cat > ${chroot_dir}/etc/init.d/expand-rootfs.sh << 'END'
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: expand-rootfs.sh
+# Required-Start:
+# Required-Stop:
+# Default-Start: 2 3 4 5 S
+# Default-Stop:
+# Short-Description: Resize the root filesystem to fill partition
+# Description:
+### END INIT INFO
 
-PREREQ=""
-prereqs()
-{
-    echo "$PREREQ"
-}
+# Get the root partition
+partition_root="$(findmnt -n -o SOURCE /)"
+partition_name="$(lsblk -no name "${partition_root}")"
+partition_pkname="$(lsblk -no pkname "${partition_root}")"
+partition_num="$(echo "${partition_name}" | grep -Eo '[0-9]+$')"
 
-case $1 in
-prereqs)
-    prereqs
-    exit 0
-    ;;
-esac
+# Get size of disk and root partition
+total_size="$(cat /sys/block/${partition_pkname}/size)"
+partition_size="$(cat /sys/block/${partition_pkname}/${partition_name}/size)"
+partition_start="$(cat /sys/block/${partition_pkname}/${partition_name}/start)"
 
-. /scripts/functions
-
-# Get root block device and remove last partition number
-disk="$(mount | grep " ${rootmnt} " | cut -d " " -f 1 | sed "s/[0-9]*$//")"
-
-# Get the partition character identifier
-if [[ "$(echo ${disk} | awk '{print substr($0,length($0),1)}')" == p ]]; then
-    if [[ "$(echo ${disk} | awk '{print substr($0,length($0)-1,1)}')" == [0-9] ]]; then
-        disk="$(echo ${disk} | awk '{print substr($0,1,length($0)-1)}')"
-    fi
-fi
-partition_char="$(if [[ "$(echo ${disk} | awk '{print substr($0,length($0),1)}')" == [0-9] ]]; then echo p; fi)"
-
-# Panic if block devices dont exist
-if [ ! -b "${disk}${partition_char}1" ]; then
-    echo "${disk}${partition_char}1 does not exist"
+# Resize partition and filesystem
+if [ $(( (0 + partition_size) / 2048 )) -lt $(( total_size / 2048 )) ]; then
+    echo -e "Yes\n100%" | parted "/dev/${partition_pkname}" resizepart "${partition_num}" ---pretend-input-tty
+    partx -u "/dev/${partition_pkname}"
+    resize2fs "/dev/${partition_name}"
 fi
 
-if [ ! -b "${disk}${partition_char}2" ]; then
-    echo "${disk}${partition_char}2 does not exist"
-fi
+# Remove script
+update-rc.d expand-rootfs.sh remove
+rm -f "$(readlink -f "$0")"
+END
+chmod +x ${chroot_dir}/etc/init.d/expand-rootfs.sh
+
+# Update fstab on first boot
+cat > ${chroot_dir}/etc/init.d/update-fstab.sh << 'EOF'
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: update-fstab.sh
+# Required-Start:
+# Required-Stop:
+# Default-Start: 2 3 4 5 S
+# Default-Stop:
+# Short-Description: Update default fstab
+# Description:
+### END INIT INFO
+
+# Get root block device and remove partition number
+disk="$(findmnt -n -o SOURCE / | sed "s/[0-9]*$//")"
 
 # Write the new fstab entries to the root device
-cat > $rootmnt/etc/fstab << END
-# <device>                  <dir>           <type>  <options>   <dump>  <fsck>
-${disk}${partition_char}1   /boot/firmware  vfat    defaults    0       2
-${disk}${partition_char}2   /               ext4    defaults    0       1
+cat > /etc/fstab << END
+# <device> <dir>       <type>  <options>   <dump>  <fsck>
+${disk}1   /boot/efi   vfat    defaults    0       2
+${disk}2   /           ext4    defaults    0       1
 END
 
-exit 0
+# Remount according to fstab
+mkdir -p /boot/efi
+mount -a
+
+# Remove script
+update-rc.d update-fstab.sh remove
+rm -f "$(readlink -f "$0")"
 EOF
-chmod +x ${chroot_dir}/etc/initramfs-tools/scripts/init-bottom/update-fstab.sh
+chmod +x ${chroot_dir}/etc/init.d/update-fstab.sh
 
-# Add command to resize serial terminal
-tee -a ${chroot_dir}/home/ubuntu/.bashrc ${chroot_dir}/root/.bashrc &>/dev/null << END
-resize() {
-    local IFS='[;' R escape geometry x y
-    echo -en '\e7\e[r\e[999;999H\e[6n\e8'
-    read -rsd R escape geometry
-    x="\${geometry##*;}"; y="\${geometry%%;*}"
-    if [[ "\${COLUMNS}" -eq "\${x}" && "\${LINES}" -eq "\${y}" ]]; then 
-        true
-    else 
-        stty cols "\${x}" rows "\${y}"
-    fi
-}
-END
+# Install init script
+cat << EOF | chroot ${chroot_dir} /bin/bash
+set -eE 
+trap 'echo Error: in $0 on line $LINENO' ERR
+
+update-rc.d update-fstab.sh defaults
+update-rc.d expand-rootfs.sh defaults
+EOF
+
+# Copy the hdmi firmware
+mkdir -p ${chroot_dir}/lib/firmware/imx/hdmi
+cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/* ${chroot_dir}/lib/firmware/imx/hdmi
+
+# Copy the vpu firmware
+mkdir -p ${chroot_dir}/lib/firmware/vpu
+cp imx-seco/firmware-imx-8.15/firmware/vpu/* ${chroot_dir}/lib/firmware/vpu
+
+# Umount the temporary API filesystems
+umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
+umount -lf ${chroot_dir}/proc 2> /dev/null || true
+umount -lf ${chroot_dir}/* 2> /dev/null || true
+
+# Tar the entire rootfs
+cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-server-arm64-apalis.rootfs.tar . && cd ..
+
+# Mount the temporary API filesystems
+mount -t proc /proc ${chroot_dir}/proc
+mount -t sysfs /sys ${chroot_dir}/sys
+mount -o bind /dev ${chroot_dir}/dev
+mount -o bind /dev/pts ${chroot_dir}/dev/pts
+
+# Download and update packages
+cat << EOF | chroot ${chroot_dir} /bin/bash
+set -eE 
+trap 'echo Error: in $0 on line $LINENO' ERR
+
+# Developer packages
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
+git binutils build-essential bc bison cmake flex libssl-dev device-tree-compiler \
+i2c-tools u-boot-tools binfmt-support
+
+# Clean package cache
+apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
+EOF
 
 # Terminal dircolors
 tee ${chroot_dir}/home/ubuntu/.dircolors ${chroot_dir}/root/.dircolors &>/dev/null << END
@@ -446,27 +499,10 @@ TERM xterm-kitty
 END
 sed -i 's/#force_color_prompt=yes/color_prompt=yes/g' ${chroot_dir}/home/ubuntu/.bashrc
 
-# Copy the hdmi firmware
-mkdir -p ${chroot_dir}/lib/firmware/imx/hdmi
-cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/* ${chroot_dir}/lib/firmware/imx/hdmi
-
-# Copy the vpu firmware
-mkdir -p ${chroot_dir}/lib/firmware/vpu
-cp imx-seco/firmware-imx-8.15/firmware/vpu/* ${chroot_dir}/lib/firmware/vpu
-
-# Update the initramfs
-cat << EOF | chroot ${chroot_dir} /bin/bash
-set -eE 
-trap 'echo Error: in $0 on line $LINENO' ERR
-
-# Update initramfs
-update-initramfs -u
-EOF
-
 # Umount the temporary API filesystems
 umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
 umount -lf ${chroot_dir}/proc 2> /dev/null || true
 umount -lf ${chroot_dir}/* 2> /dev/null || true
 
 # Tar the entire rootfs
-cd rootfs && tar -cpf ../ubuntu-apalis-imx8.rootfs.tar . && cd ..
+cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-server-custom-arm64-apalis.rootfs.tar . && cd ..
