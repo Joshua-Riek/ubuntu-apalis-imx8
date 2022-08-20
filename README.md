@@ -32,6 +32,16 @@ cd ubuntu-apalis-imx8
 sudo ./build.sh
 ```
 
+## Flash removable media
+
+To flash the Ubuntu 20.04 preinstalled image to removable media:
+
+```
+xz -dc ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz | dd of=/dev/sdX bs=4k conv=fdatasync
+```
+
+> This assumes that the removable media is added as /dev/sdX and all it’s partitions are unmounted.
+
 ## Project Layout
 
 ```shell
