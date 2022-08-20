@@ -126,7 +126,7 @@ EOF
 echo "nameserver 8.8.8.8" > ${chroot_dir}/etc/resolv.conf
 
 # Hostname
-echo "apalis-imx8qm" > ${chroot_dir}/etc/hostname
+echo "apalis-imx8" > ${chroot_dir}/etc/hostname
 
 # Networking interfaces
 cat > ${chroot_dir}/etc/network/interfaces << END
@@ -144,7 +144,7 @@ END
 # Hosts file
 cat > ${chroot_dir}/etc/hosts << END
 127.0.0.1       localhost
-127.0.1.1       apalis-imx8qm
+127.0.1.1       apalis-imx8
 
 ::1             localhost ip6-localhost ip6-loopback
 fe00::0         ip6-localnet
