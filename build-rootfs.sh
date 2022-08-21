@@ -202,7 +202,7 @@ partition_size="$(cat /sys/block/${partition_pkname}/${partition_name}/size)"
 partition_start="$(cat /sys/block/${partition_pkname}/${partition_name}/start)"
 
 # Resize partition and filesystem
-if [ $(( (0 + partition_size) / 2048 )) -lt $(( total_size / 2048 )) ]; then
+if [ $(( (partition_start + partition_size) / 2048 )) -lt $(( total_size / 2048 )) ]; then
     echo -e "Yes\n100%" | parted "/dev/${partition_pkname}" resizepart "${partition_num}" ---pretend-input-tty
     partx -u "/dev/${partition_pkname}"
     resize2fs "/dev/${partition_name}"
