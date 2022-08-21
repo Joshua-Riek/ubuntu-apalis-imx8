@@ -40,14 +40,14 @@ To flash the Ubuntu 20.04 preinstalled image to emmc:
 sudo ./flash.sh ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
 ```
 
-> This assumes that you have connected the carrier board USB OTG port to your Linux host machine and have entered recovery mode on the device.
+> This assumes that you have connected the carrier board USB OTG port to your Linux host machine and have entered recovery mode on the device. For more information see the Toradex wiki [here](https://developer.toradex.com/linux-bsp/how-to/hardware-related/imx-recovery-mode/).
 
 ## Flash Removable Media
 
 To flash the Ubuntu 20.04 preinstalled image to removable media:
 
 ```
-xz -dc ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz | dd of=/dev/sdX bs=4k conv=fdatasync
+xz -dc ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz | sudo dd of=/dev/sdX bs=4k
 ```
 
 > This assumes that the removable media is added as /dev/sdX and all it’s partitions are unmounted.
