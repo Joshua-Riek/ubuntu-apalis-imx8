@@ -23,12 +23,10 @@ mkdir -p build && cd build
 
 # Ensure xz archive
 filename="$(basename "${img}")"
-if [ "${filename##*.}" != "xz" ]; then
-    echo "Error: ${filename} must be an xz archive"
+if [ "${filename##*.}" == "xz" ]; then
+    xz -dc -T0 "${img}" > "${filename%.*}"
+    img="$(readlink -f "${filename%.*}")"
 fi
-
-xz -dc -T0 "${img}" > "${filename%.*}"
-img="$(readlink -f "${filename%.*}")"
 
 # Ensure img file
 filename="$(basename "${img}")"
