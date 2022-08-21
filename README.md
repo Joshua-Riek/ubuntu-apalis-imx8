@@ -19,7 +19,8 @@ Please install the below packages on your host machine:
 
 ```
 sudo apt-get install -y build-essential gcc-aarch64-linux-gnu bison \
-qemu-user-static u-boot-tools binfmt-support debootstrap flex libssl-dev
+qemu-user-static qemu-system-arm qemu-efi u-boot-tools binfmt-support \
+debootstrap flex libssl-dev
 ```
 
 ## Building
@@ -32,12 +33,20 @@ cd ubuntu-apalis-imx8
 sudo ./build.sh
 ```
 
+## Virtual Machine
+
+To run the Ubuntu 20.04 preinstalled image in a virtual machine:
+
+```
+sudo ./qemu.sh build/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
+```
+
 ## Flash emmc
 
 To flash the Ubuntu 20.04 preinstalled image to emmc:
 
 ```
-sudo ./flash.sh ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
+sudo ./flash.sh build/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
 ```
 
 > This assumes that you have connected the carrier board USB OTG port to your Linux host machine and have entered recovery mode on the device. For more information see the Toradex wiki [here](https://developer.toradex.com/linux-bsp/how-to/hardware-related/imx-recovery-mode/).
@@ -47,7 +56,7 @@ sudo ./flash.sh ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
 To flash the Ubuntu 20.04 preinstalled image to removable media:
 
 ```
-xz -dc ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz | sudo dd of=/dev/sdX bs=4k
+xz -dc build/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz | sudo dd of=/dev/sdX bs=4k
 ```
 
 > This assumes that the removable media is added as /dev/sdX and all it’s partitions are unmounted.
@@ -61,5 +70,6 @@ ubuntu-apalis-imx8
 ├── build-rootfs.sh     # Build the root file system
 ├── build-image.sh      # Build the Ubuntu preinstalled image
 ├── build.sh            # Build the kernel, bootloader, rootfs, and image
-└── flash.sh            # Flash produced disk image to emmc
+├── flash.sh            # Flash produced disk image to emmc
+└── qemu.sh             # Run produced disk image in a vm
 ```
