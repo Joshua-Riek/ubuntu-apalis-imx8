@@ -22,15 +22,13 @@ mirror=http://ports.ubuntu.com/ubuntu-ports
 chroot_dir=rootfs
 
 # Clean chroot dir and make sure folder is not mounted
-umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
-umount -lf ${chroot_dir}/proc 2> /dev/null || true
-umount -lf ${chroot_dir}/* 2> /dev/null || true
+umount -f ${chroot_dir}/dev/pts 2> /dev/null || true
+umount -f ${chroot_dir}/* 2> /dev/null || true
 rm -rf ${chroot_dir}
 mkdir -p ${chroot_dir}
 
 # Install the base system into a directory 
-debootstrap --verbose --arch ${arch} ${release} ${chroot_dir} ${mirror}
-cp -av /usr/bin/qemu-aarch64-static ${chroot_dir}/usr/bin
+qemu-debootstrap --arch ${arch} ${release} ${chroot_dir} ${mirror}
 
 # Use a more complete sources.list file 
 cat > ${chroot_dir}/etc/apt/sources.list << EOF
@@ -265,9 +263,8 @@ mkdir -p ${chroot_dir}/lib/firmware/vpu
 cp imx-seco/firmware-imx-8.15/firmware/vpu/* ${chroot_dir}/lib/firmware/vpu
 
 # Umount the temporary API filesystems
-umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
-umount -lf ${chroot_dir}/proc 2> /dev/null || true
-umount -lf ${chroot_dir}/* 2> /dev/null || true
+umount -f ${chroot_dir}/dev/pts 2> /dev/null || true
+umount -f ${chroot_dir}/* 2> /dev/null || true
 
 # Tar the entire rootfs
 cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-server-arm64-apalis.rootfs.tar . && cd ..
@@ -503,9 +500,8 @@ END
 sed -i 's/#force_color_prompt=yes/color_prompt=yes/g' ${chroot_dir}/home/ubuntu/.bashrc
 
 # Umount the temporary API filesystems
-umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
-umount -lf ${chroot_dir}/proc 2> /dev/null || true
-umount -lf ${chroot_dir}/* 2> /dev/null || true
+umount -f ${chroot_dir}/dev/pts 2> /dev/null || true
+umount -f ${chroot_dir}/* 2> /dev/null || true
 
 # Tar the entire rootfs
 cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-server-custom-arm64-apalis.rootfs.tar . && cd ..
