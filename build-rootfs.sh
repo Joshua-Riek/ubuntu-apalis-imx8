@@ -254,6 +254,9 @@ update-rc.d update-fstab.sh defaults
 update-rc.d expand-rootfs.sh defaults
 EOF
 
+# Remove new release motd
+rm -f ${chroot_dir}/etc/update-motd.d/91-release-upgrade
+
 # Copy the hdmi firmware
 mkdir -p ${chroot_dir}/lib/firmware/imx/hdmi
 cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/* ${chroot_dir}/lib/firmware/imx/hdmi
