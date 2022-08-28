@@ -138,8 +138,8 @@ EOF
     cp device-tree-overlays/overlays/display-*.dtbo ${mount_point}/efi/overlays
 
     # Copy hdmi firmware
-    cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/dpfw.bin ${mount_point}/efi
-    cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/hdmitxfw.bin ${mount_point}/efi
+    cp firmware-imx-8.15/firmware/hdmi/cadence/dpfw.bin ${mount_point}/efi
+    cp firmware-imx-8.15/firmware/hdmi/cadence/hdmitxfw.bin ${mount_point}/efi
 
     sync --file-system
     sync

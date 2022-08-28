@@ -15,6 +15,14 @@ if [ ! -d linux-toradex ]; then
     exit 1
 fi
 
+# Download and extract the IMX Firmware
+if [ ! -d firmware-imx-8.15 ]; then
+    wget -nc https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.15.bin
+    chmod u+x firmware-imx-8.15.bin
+    ./firmware-imx-8.15.bin --auto-accept --force
+    rm -f firmware-imx-8.15.bin
+fi
+
 # Debootstrap options
 arch=arm64
 release=focal
@@ -259,11 +267,11 @@ rm -f ${chroot_dir}/var/lib/ubuntu-release-upgrader/release-upgrade-available
 
 # Copy the hdmi firmware
 mkdir -p ${chroot_dir}/lib/firmware/imx/hdmi
-cp imx-seco/firmware-imx-8.15/firmware/hdmi/cadence/* ${chroot_dir}/lib/firmware/imx/hdmi
+cp firmware-imx-8.15/firmware/hdmi/cadence/* ${chroot_dir}/lib/firmware/imx/hdmi
 
 # Copy the vpu firmware
 mkdir -p ${chroot_dir}/lib/firmware/vpu
-cp imx-seco/firmware-imx-8.15/firmware/vpu/* ${chroot_dir}/lib/firmware/vpu
+cp firmware-imx-8.15/firmware/vpu/* ${chroot_dir}/lib/firmware/vpu
 
 # Umount the temporary API filesystems
 umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
