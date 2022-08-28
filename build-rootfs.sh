@@ -516,3 +516,143 @@ umount -lf ${chroot_dir}/* 2> /dev/null || true
 
 # Tar the entire rootfs
 cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-server-custom-arm64-apalis.rootfs.tar . && cd ..
+
+# Mount the temporary API filesystems
+mkdir -p ${chroot_dir}/{proc,sys,run,dev,dev/pts}
+mount -t proc /proc ${chroot_dir}/proc
+mount -t sysfs /sys ${chroot_dir}/sys
+mount -o bind /dev ${chroot_dir}/dev
+mount -o bind /dev/pts ${chroot_dir}/dev/pts
+
+# Download and update packages
+cat << EOF | chroot ${chroot_dir} /bin/bash
+set -eE 
+trap 'echo Error: in $0 on line $LINENO' ERR
+
+# Install dependencies
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
+v4l-utils alsa-utils libglib2.0-dev libpango1.0-dev libatk1.0-dev libcairo2 \
+libxcb-composite0 libxcb-xfixes0 libxcursor1 libjpeg62 libxfont2 libtinfo5 \
+libxshmfence1 libxdamage1 x11-xkb-utils libxaw7 libxinerama1 libjpeg-turbo8
+
+# GPU benchmark tools
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
+glmark2 glmark2-es2 glmark2-wayland glmark2-es2-wayland 
+
+# Clean package cache
+apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
+EOF
+
+# Service to start weston
+cat > ${chroot_dir}/lib/systemd/system/weston.service << END
+[Unit]
+Description=Weston Wayland compositor startup
+RequiresMountsFor=/run
+
+[Service]
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+ExecStartPre=/bin/sleep 5
+ExecStartPre=/bin/mkdir -p /run/user/1000
+ExecStart=/usr/bin/sudo -E weston --tty=1
+
+[Install]
+WantedBy=multi-user.target
+END
+
+# Enable weston service
+cat << EOF | chroot ${chroot_dir} /bin/bash
+set -eE 
+trap 'echo Error: in $0 on line $LINENO' ERR
+
+systemctl enable weston.service
+EOF
+
+# Remove drm, mesa, and wayland
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libdrm*
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/mesa-egl
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libglapi.so.0*
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libwayland-*
+
+# Extract and install GPU accelerated packages
+for deb in ../debs/*/*.deb; do dpkg -x "${deb}" ${chroot_dir}/tmp; done
+cp -Ppra ${chroot_dir}/tmp/lib ${chroot_dir}/usr
+cp -Ppra ${chroot_dir}/tmp/{usr,opt,etc,var} ${chroot_dir}/
+rm -rf ${chroot_dir}/tmp/{lib,usr,opt,etc,var}
+
+# Umount the temporary API filesystems
+umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
+umount -lf ${chroot_dir}/* 2> /dev/null || true
+
+# Tar the entire rootfs
+cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-desktop-weston-custom-arm64-apalis.rootfs.tar . && cd ..
+rm -rf ${chroot_dir} && mkdir -p ${chroot_dir}
+cd ${chroot_dir} && tar -xpf ../ubuntu-20.04-preinstalled-server-arm64-apalis.rootfs.tar . && cd ..
+
+# Mount the temporary API filesystems
+mkdir -p ${chroot_dir}/{proc,sys,run,dev,dev/pts}
+mount -t proc /proc ${chroot_dir}/proc
+mount -t sysfs /sys ${chroot_dir}/sys
+mount -o bind /dev ${chroot_dir}/dev
+mount -o bind /dev/pts ${chroot_dir}/dev/pts
+
+# Download and update packages
+cat << EOF | chroot ${chroot_dir} /bin/bash
+set -eE 
+trap 'echo Error: in $0 on line $LINENO' ERR
+
+# Install dependencies
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
+v4l-utils alsa-utils libglib2.0-dev libpango1.0-dev libatk1.0-dev libcairo2 \
+libxcb-composite0 libxcb-xfixes0 libxcursor1 libjpeg62 libxfont2 libtinfo5 \
+libxshmfence1 libxdamage1 x11-xkb-utils libxaw7 libxinerama1 libjpeg-turbo8
+
+# GPU benchmark tools
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
+glmark2 glmark2-es2 glmark2-wayland glmark2-es2-wayland 
+
+# Clean package cache
+apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
+EOF
+
+# Service to start weston
+cat > ${chroot_dir}/lib/systemd/system/weston.service << END
+[Unit]
+Description=Weston Wayland compositor startup
+RequiresMountsFor=/run
+
+[Service]
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+ExecStartPre=/bin/sleep 5
+ExecStartPre=/bin/mkdir -p /run/user/1000
+ExecStart=/usr/bin/sudo -E weston --tty=1
+
+[Install]
+WantedBy=multi-user.target
+END
+
+# Enable weston service
+cat << EOF | chroot ${chroot_dir} /bin/bash
+set -eE 
+trap 'echo Error: in $0 on line $LINENO' ERR
+
+systemctl enable weston.service
+EOF
+
+# Remove drm, mesa, and wayland
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libdrm*
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/mesa-egl
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libglapi.so.0*
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libwayland-*
+
+# Extract and install GPU accelerated packages
+for deb in ../debs/*/*.deb; do dpkg -x "${deb}" ${chroot_dir}/tmp; done
+cp -Ppra ${chroot_dir}/tmp/lib ${chroot_dir}/usr
+cp -Ppra ${chroot_dir}/tmp/{usr,opt,etc,var} ${chroot_dir}/
+rm -rf ${chroot_dir}/tmp/{lib,usr,opt,etc,var}
+
+# Umount the temporary API filesystems
+umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
+umount -lf ${chroot_dir}/* 2> /dev/null || true
+
+# Tar the entire rootfs
+cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-desktop-weston-arm64-apalis.rootfs.tar . && cd ..
