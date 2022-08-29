@@ -533,7 +533,9 @@ trap 'echo Error: in $0 on line $LINENO' ERR
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
 v4l-utils alsa-utils libglib2.0-dev libpango1.0-dev libatk1.0-dev libcairo2 \
 libxcb-composite0 libxcb-xfixes0 libxcursor1 libjpeg62 libxfont2 libtinfo5 \
-libxshmfence1 libxdamage1 x11-xkb-utils libxaw7 libxinerama1 libjpeg-turbo8
+libxshmfence1 libxdamage1 x11-xkb-utils libxaw7 libxinerama1 libjpeg-turbo8 \
+libev-dev libevdev2 libevdev-dev libevdev-doc libinput10 libinput-bin \
+libinput-dev libxkbcommon0 libxkbcommon-dev mtdev-tools
 
 # GPU benchmark tools
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
@@ -574,10 +576,9 @@ rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libglapi.so.0*
 rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libwayland-*
 
 # Extract and install GPU accelerated packages
-for deb in ../debs/*/*.deb; do dpkg -x "${deb}" ${chroot_dir}/tmp; done
-cp -Ppra ${chroot_dir}/tmp/lib ${chroot_dir}/usr
-cp -Ppra ${chroot_dir}/tmp/{usr,opt,etc,var} ${chroot_dir}/
-rm -rf ${chroot_dir}/tmp/{lib,usr,opt,etc,var}
+for deb in ../debs/*/*.deb; do 
+    dpkg -x "${deb}" ${chroot_dir}
+done
 
 # Umount the temporary API filesystems
 umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
@@ -604,7 +605,9 @@ trap 'echo Error: in $0 on line $LINENO' ERR
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
 v4l-utils alsa-utils libglib2.0-dev libpango1.0-dev libatk1.0-dev libcairo2 \
 libxcb-composite0 libxcb-xfixes0 libxcursor1 libjpeg62 libxfont2 libtinfo5 \
-libxshmfence1 libxdamage1 x11-xkb-utils libxaw7 libxinerama1 libjpeg-turbo8
+libxshmfence1 libxdamage1 x11-xkb-utils libxaw7 libxinerama1 libjpeg-turbo8 \
+libev-dev libevdev2 libevdev-dev libevdev-doc libinput10 libinput-bin \
+libinput-dev libxkbcommon0 libxkbcommon-dev mtdev-tools
 
 # GPU benchmark tools
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
@@ -645,10 +648,9 @@ rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libglapi.so.0*
 rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libwayland-*
 
 # Extract and install GPU accelerated packages
-for deb in ../debs/*/*.deb; do dpkg -x "${deb}" ${chroot_dir}/tmp; done
-cp -Ppra ${chroot_dir}/tmp/lib ${chroot_dir}/usr
-cp -Ppra ${chroot_dir}/tmp/{usr,opt,etc,var} ${chroot_dir}/
-rm -rf ${chroot_dir}/tmp/{lib,usr,opt,etc,var}
+for deb in ../debs/*/*.deb; do 
+    dpkg -x "${deb}" ${chroot_dir}
+done
 
 # Umount the temporary API filesystems
 umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
