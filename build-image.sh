@@ -12,10 +12,9 @@ mkdir -p build && cd build
 
 loop=/dev/loop1000
 
-images="$(readlink -f ./*.tar)"
-for rootfs in ${images}; do
-    if [ ! -f "${rootfs}" ]; then
-        echo "Error: '${rootfs}' does not exist"
+for rootfs in *.rootfs.tar; do
+    if [ ! -e "${rootfs}" ]; then
+        echo "Error: in $0 on line $LINENO could not find any rootfs tarfile, please run build-rootfs.sh"
         exit 1
     fi
 
