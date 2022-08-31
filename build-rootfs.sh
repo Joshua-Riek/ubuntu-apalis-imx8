@@ -638,18 +638,24 @@ umount -lf ${chroot_dir}/* 2> /dev/null || true
 
 # Tar the entire rootfs
 cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-desktop-weston-custom-arm64-apalis.rootfs.tar . && cd ..
-rm -rf ${chroot_dir} && mkdir -p ${chroot_dir}
-cd ${chroot_dir} && tar -xpf ../ubuntu-20.04-preinstalled-server-arm64-apalis.rootfs.tar . && cd ..
 
-# Mount the temporary API filesystems
-mkdir -p ${chroot_dir}/{proc,sys,run,dev,dev/pts}
-mount -t proc /proc ${chroot_dir}/proc
-mount -t sysfs /sys ${chroot_dir}/sys
-mount -o bind /dev ${chroot_dir}/dev
-mount -o bind /dev/pts ${chroot_dir}/dev/pts
+images="ubuntu-20.04-preinstalled-server-arm64-apalis.rootfs.tar ubuntu-20.04-preinstalled-server-custom-arm64-apalis.rootfs.tar"
+for rootfs in ${images}; do
+    rm -rf ${chroot_dir}
+    mkdir -p ${chroot_dir}
 
-# Download and update packages
-cat << EOF | chroot ${chroot_dir} /bin/bash
+    # Untar the entire rootfs
+    cd ${chroot_dir} && tar -xpf "../${rootfs}" . && cd ..
+
+    # Mount the temporary API filesystems
+    mkdir -p ${chroot_dir}/{proc,sys,run,dev,dev/pts}
+    mount -t proc /proc ${chroot_dir}/proc
+    mount -t sysfs /sys ${chroot_dir}/sys
+    mount -o bind /dev ${chroot_dir}/dev
+    mount -o bind /dev/pts ${chroot_dir}/dev/pts
+
+    # Download and update packages
+    cat << EOF | chroot ${chroot_dir} /bin/bash
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
 
@@ -669,8 +675,8 @@ glmark2 glmark2-es2 glmark2-wayland glmark2-es2-wayland
 apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
 EOF
 
-# Service to start weston
-cat > ${chroot_dir}/lib/systemd/system/weston.service << END
+    # Service to start weston
+    cat > ${chroot_dir}/lib/systemd/system/weston.service << END
 [Unit]
 Description=Weston Wayland Compositor (on tty7)
 RequiresMountsFor=/run
@@ -707,17 +713,17 @@ ExecStart=/usr/bin/weston --log=\${XDG_RUNTIME_DIR}/weston.log \$OPTARGS
 WantedBy=multi-user.target
 END
 
-# Enable weston service
-cat << EOF | chroot ${chroot_dir} /bin/bash
+    # Enable weston service
+    cat << EOF | chroot ${chroot_dir} /bin/bash
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
 
 systemctl enable weston.service
 EOF
 
-# Configuration file for weston
-mkdir -p ${chroot_dir}/etc/xdg/weston
-cat > ${chroot_dir}/etc/xdg/weston/weston.ini << END
+    # Configuration file for weston
+    mkdir -p ${chroot_dir}/etc/xdg/weston
+    cat > ${chroot_dir}/etc/xdg/weston/weston.ini << END
 [core]
 #gbm-format=argb8888
 idle-time=0
@@ -745,20 +751,21 @@ xwayland=true
 command=@bindir@/weston --backend=rdp-backend.so --shell=fullscreen-shell.so --no-clients-resize
 END
 
-# Remove drm, mesa, and wayland
-rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libdrm*
-rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/mesa-egl
-rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libglapi.so.0*
-rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libwayland-*
+    # Remove drm, mesa, and wayland
+    rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libdrm*
+    rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/mesa-egl
+    rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libglapi.so.0*
+    rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libwayland-*
 
-# Extract and install GPU accelerated packages
-for deb in ../debs/*/*.deb; do 
-    dpkg -x "${deb}" ${chroot_dir}
+    # Extract and install GPU accelerated packages
+    for deb in ../debs/*/*.deb; do 
+        dpkg -x "${deb}" ${chroot_dir}
+    done
+
+    # Umount the temporary API filesystems
+    umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
+    umount -lf ${chroot_dir}/* 2> /dev/null || true
+
+    # Tar the entire rootfs
+    cd ${chroot_dir} && tar -cpf "../${rootfs//server/desktop-weston}" . && cd ..
 done
-
-# Umount the temporary API filesystems
-umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
-umount -lf ${chroot_dir}/* 2> /dev/null || true
-
-# Tar the entire rootfs
-cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-desktop-weston-arm64-apalis.rootfs.tar . && cd ..
