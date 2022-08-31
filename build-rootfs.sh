@@ -548,14 +548,36 @@ EOF
 # Service to start weston
 cat > ${chroot_dir}/lib/systemd/system/weston.service << END
 [Unit]
-Description=Weston Wayland compositor startup
+Description=Weston Wayland Compositor (on tty7)
 RequiresMountsFor=/run
+Conflicts=plymouth-quit.service
+After=systemd-user-sessions.service plymouth-quit-wait.service
 
 [Service]
-Environment="XDG_RUNTIME_DIR=/run/user/1000"
-ExecStartPre=/bin/sleep 5
-ExecStartPre=/bin/mkdir -p /run/user/1000
-ExecStart=/usr/bin/sudo -E weston --tty=1
+PermissionsStartOnly=true
+
+# Grab tty7
+UtmpIdentifier=tty7
+TTYPath=/dev/tty7
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+
+# stderr to journal so our logging doesn't get thrown into /dev/null
+StandardOutput=tty
+StandardInput=tty
+StandardError=journal
+
+# Set environment and XDG runtime
+Environment="XDG_RUNTIME_DIR=/run/user/0"
+EnvironmentFile=-/etc/default/weston
+ExecStartPre=/bin/mkdir -p \${XDG_RUNTIME_DIR}
+
+# Weston does not successfully change VT, nor does systemd place us on
+# the VT it just activated for us. Switch manually:
+ExecStartPre=/usr/bin/chvt 7
+
+ExecStart=/usr/bin/weston --log=\${XDG_RUNTIME_DIR}/weston.log \$OPTARGS
 
 [Install]
 WantedBy=multi-user.target
@@ -568,6 +590,36 @@ trap 'echo Error: in $0 on line $LINENO' ERR
 
 systemctl enable weston.service
 EOF
+
+# Configuration file for weston
+mkdir -p ${chroot_dir}/etc/xdg/weston
+cat > ${chroot_dir}/etc/xdg/weston/weston.ini << END
+[core]
+#gbm-format=argb8888
+idle-time=0
+use-g2d=1
+xwayland=true
+
+#[shell]
+#size=1920x1080
+
+#[output]
+#name=HDMI-A-1
+#mode=1920x1080@60
+#transform=90
+
+#[output]
+#name=HDMI-A-2
+#mode=off
+#	WIDTHxHEIGHT    Resolution size width and height in pixels
+#	off             Disables the output
+#	preferred       Uses the preferred mode
+#	current         Uses the current crt controller mode
+#transform=90
+
+[screen-share]
+command=@bindir@/weston --backend=rdp-backend.so --shell=fullscreen-shell.so --no-clients-resize
+END
 
 # Remove drm, mesa, and wayland
 rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libdrm*
@@ -620,14 +672,36 @@ EOF
 # Service to start weston
 cat > ${chroot_dir}/lib/systemd/system/weston.service << END
 [Unit]
-Description=Weston Wayland compositor startup
+Description=Weston Wayland Compositor (on tty7)
 RequiresMountsFor=/run
+Conflicts=plymouth-quit.service
+After=systemd-user-sessions.service plymouth-quit-wait.service
 
 [Service]
-Environment="XDG_RUNTIME_DIR=/run/user/1000"
-ExecStartPre=/bin/sleep 5
-ExecStartPre=/bin/mkdir -p /run/user/1000
-ExecStart=/usr/bin/sudo -E weston --tty=1
+PermissionsStartOnly=true
+
+# Grab tty7
+UtmpIdentifier=tty7
+TTYPath=/dev/tty7
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+
+# stderr to journal so our logging doesn't get thrown into /dev/null
+StandardOutput=tty
+StandardInput=tty
+StandardError=journal
+
+# Set environment and XDG runtime
+Environment="XDG_RUNTIME_DIR=/run/user/0"
+EnvironmentFile=-/etc/default/weston
+ExecStartPre=/bin/mkdir -p \${XDG_RUNTIME_DIR}
+
+# Weston does not successfully change VT, nor does systemd place us on
+# the VT it just activated for us. Switch manually:
+ExecStartPre=/usr/bin/chvt 7
+
+ExecStart=/usr/bin/weston --log=\${XDG_RUNTIME_DIR}/weston.log \$OPTARGS
 
 [Install]
 WantedBy=multi-user.target
@@ -640,6 +714,36 @@ trap 'echo Error: in $0 on line $LINENO' ERR
 
 systemctl enable weston.service
 EOF
+
+# Configuration file for weston
+mkdir -p ${chroot_dir}/etc/xdg/weston
+cat > ${chroot_dir}/etc/xdg/weston/weston.ini << END
+[core]
+#gbm-format=argb8888
+idle-time=0
+use-g2d=1
+xwayland=true
+
+#[shell]
+#size=1920x1080
+
+#[output]
+#name=HDMI-A-1
+#mode=1920x1080@60
+#transform=90
+
+#[output]
+#name=HDMI-A-2
+#mode=off
+#	WIDTHxHEIGHT    Resolution size width and height in pixels
+#	off             Disables the output
+#	preferred       Uses the preferred mode
+#	current         Uses the current crt controller mode
+#transform=90
+
+[screen-share]
+command=@bindir@/weston --backend=rdp-backend.so --shell=fullscreen-shell.so --no-clients-resize
+END
 
 # Remove drm, mesa, and wayland
 rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libdrm*
