@@ -41,6 +41,17 @@ To run the Ubuntu 20.04 preinstalled image in a virtual machine:
 sudo ./qemu.sh build/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
 ```
 
+## Login
+
+There are two predefined users on the system: `ubuntu` and `root`. The password for each is `root`. 
+
+```
+Ubuntu 20.04.5 TLS apalis-imx8 tty1
+
+apalis-imx8 login: root
+Password: root
+```
+
 ## Flash emmc
 
 To flash the Ubuntu 20.04 preinstalled image to emmc:
