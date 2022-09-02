@@ -63,9 +63,9 @@ FB: ucmd mmc dev 0
 # Flash the bootloader and os image to emmc
 FB: flash -raw2sparse all "${img}"
 FB: flash bootloader imx-mkimage/iMX8QM/imx-boot
+FB: env default -a
+FB: saveenv
 FB: done
 EOF
 
 ./uuu/uuu -b uuu/flash.uuu
-
-rm -f "${img}"
