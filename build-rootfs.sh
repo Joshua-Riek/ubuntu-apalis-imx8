@@ -549,6 +549,10 @@ libinput-dev libxkbcommon0 libxkbcommon-dev mtdev-tools
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
 glmark2 glmark2-es2 glmark2-wayland glmark2-es2-wayland 
 
+# Install default wallpapers
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
+ubuntu-wallpapers
+
 # Clean package cache
 apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
 EOF
@@ -608,8 +612,10 @@ idle-time=0
 use-g2d=1
 xwayland=true
 
-#[shell]
+[shell]
 #size=1920x1080
+background-image=/usr/share/backgrounds/warty-final-ubuntu.png
+background-type=scale
 
 #[output]
 #name=HDMI-A-1
