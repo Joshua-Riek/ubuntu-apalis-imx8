@@ -203,20 +203,20 @@ partition_pkname="$(lsblk -no pkname "${partition_root}")"
 partition_num="$(echo "${partition_name}" | grep -Eo '[0-9]+$')"
 
 # Get size of disk and root partition
-total_size="$(cat /sys/block/${partition_pkname}/size)"
-partition_size="$(cat /sys/block/${partition_pkname}/${partition_name}/size)"
 partition_start="$(cat /sys/block/${partition_pkname}/${partition_name}/start)"
+partition_end="$(( partition_start + $(cat /sys/block/${partition_pkname}/${partition_name}/size)))"
+partition_newend="$(( $(cat /sys/block/${partition_pkname}/size) - 8))"
 
 # Resize partition and filesystem
-if [ $(( (partition_start + partition_size) / 2048 )) -lt $(( total_size / 2048 )) ]; then
+if [ "${partition_newend}" -gt "${partition_end}" ];then
     echo -e "Yes\n100%" | parted "/dev/${partition_pkname}" resizepart "${partition_num}" ---pretend-input-tty
     partx -u "/dev/${partition_pkname}"
     resize2fs "/dev/${partition_name}"
+    sync
 fi
 
 # Remove script
 update-rc.d expand-rootfs.sh remove
-rm -f "$(readlink -f "$0")"
 END
 chmod +x ${chroot_dir}/etc/init.d/expand-rootfs.sh
 
@@ -249,7 +249,6 @@ mount -a
 
 # Remove script
 update-rc.d update-fstab.sh remove
-rm -f "$(readlink -f "$0")"
 EOF
 chmod +x ${chroot_dir}/etc/init.d/update-fstab.sh
 
