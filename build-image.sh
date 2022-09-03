@@ -156,5 +156,5 @@ EOF
 
     echo "Compressing $(basename "${img}.xz")"
     xz -6 --extreme --force --keep --quiet --threads=0 "${img}"
-    rm -f "${img}" "${rootfs}"
+    rm -f "${img}"
 done
