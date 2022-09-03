@@ -14,7 +14,7 @@ loop=/dev/loop1000
 
 for rootfs in *.rootfs.tar; do
     if [ ! -e "${rootfs}" ]; then
-        echo "Error: in $0 on line $LINENO could not find any rootfs tarfile, please run build-rootfs.sh"
+        echo "Error: could not find any rootfs tarfile, please run build-rootfs.sh"
         exit 1
     fi
 

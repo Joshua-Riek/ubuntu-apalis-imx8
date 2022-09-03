@@ -10,8 +10,12 @@ fi
 
 mkdir -p build && cd build
 
-if [ ! -d linux-toradex ]; then
-    echo "Error: 'linux-toradex' not found"
+# Grab the kernel version
+kernel_version="$(cat linux-toradex/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/')"
+if [ ! -f "linux-image-${kernel_version}_${kernel_version}-1_arm64.deb" ] ||
+ [ ! -f "linux-headers-${kernel_version}_${kernel_version}-1_arm64.deb" ] ||
+ [ ! -f "linux-libc-dev_${kernel_version}-1_arm64.deb" ]; then
+    echo "Error: could not find kernel deb packages, please run build-kernel.sh"
     exit 1
 fi
 
@@ -87,9 +91,6 @@ pigz wget curl grub-common grub2-common grub-efi-arm64 grub-efi-arm64-bin
 # Clean package cache
 apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
 EOF
-
-# Grab the kernel version
-kernel_version="$(cat linux-toradex/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/')"
 
 # Install kernel, modules, and headers
 cat << EOF | chroot ${chroot_dir} /bin/bash

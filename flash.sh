@@ -21,6 +21,13 @@ fi
 
 mkdir -p build && cd build
 
+# Ensure the imx bootloader exists
+bootloader="imx-mkimage/iMX8QM/imx-boot"
+if [ ! -f "${bootloader}" ] ; then
+    echo "Error: could not find the imx bootloader, please run build-imx-boot.sh"
+    exit 1
+fi
+
 # Ensure xz archive
 filename="$(basename "${img}")"
 if [ "${filename##*.}" == "xz" ]; then
@@ -53,7 +60,7 @@ CFG: FB: -vid 0x0525 -pid 0x4030
 CFG: FB: -vid 0x0525 -pid 0x4031
 
 # Load bootloader image into RAM
-SDPS: boot -f imx-mkimage/iMX8QM/imx-boot
+SDPS: boot -f "${bootloader}"
 
 # Setup uboot environment for flashing emmc
 FB: ucmd setenv fastboot_dev mmc
@@ -62,7 +69,7 @@ FB: ucmd mmc dev 0
 
 # Flash the bootloader and os image to emmc
 FB: flash -raw2sparse all "${img}"
-FB: flash bootloader imx-mkimage/iMX8QM/imx-boot
+FB: flash bootloader "${bootloader}"
 FB: env default -a
 FB: saveenv
 FB: done
