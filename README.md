@@ -84,3 +84,9 @@ ubuntu-apalis-imx8
 ├── flash.sh            # Flash produced disk image to emmc
 └── qemu.sh             # Run produced disk image in a vm
 ```
+
+## Known Limitations
+
+1. The weston, wayland, and gstreamer libraries are all tweaked with hardware acceleration. So please don't remove them and re-install with apt-get.
+
+2. The default gnome desktop does not support hardware acceleration.
