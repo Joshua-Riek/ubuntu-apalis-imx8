@@ -70,8 +70,8 @@ FB: ucmd mmc dev 0
 # Flash the bootloader and os image to emmc
 FB: flash -raw2sparse all "${img}"
 FB: flash bootloader "${bootloader}"
-FB: env default -a
-FB: saveenv
+FB: ucmd env default -a
+FB: ucmd saveenv
 FB: done
 EOF
 
