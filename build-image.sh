@@ -12,7 +12,7 @@ mkdir -p images build && cd build
 
 loop=/dev/loop1000
 
-for rootfs in *.rootfs.tar; do
+for rootfs in *.rootfs.tar.xz; do
     if [ ! -e "${rootfs}" ]; then
         echo "Error: could not find any rootfs tarfile, please run build-rootfs.sh"
         exit 1
@@ -23,7 +23,7 @@ for rootfs in *.rootfs.tar; do
     losetup -d "${loop}" 2> /dev/null || true
 
     # Create an empty disk image
-    img="../images/$(basename "${rootfs}" .rootfs.tar).img"
+    img="../images/$(basename "${rootfs}" .rootfs.tar.xz).img"
     truncate -s "$(( $(wc -c < "${rootfs}") / 1024 / 1024 + 2048 + 512 ))M" "${img}"
 
     # Create loop device for disk image
@@ -79,7 +79,8 @@ for rootfs in *.rootfs.tar; do
     fs_uuid=$(lsblk -ndo UUID "${disk}${partition_char}2")
 
     # Copy the rootfs to root partition
-    tar -xpf "${rootfs}" -C ${mount_point}/root
+    echo -e "Decompressing $(basename "${rootfs}")\n"
+    tar -xpJf "${rootfs}" -C ${mount_point}/root
 
     # Extract grub arm64-efi to host system 
     if [ ! -d "/usr/lib/grub/arm64-efi" ]; then
@@ -154,7 +155,7 @@ EOF
     # Remove loop device
     losetup -d "${loop}"
 
-    echo "Compressing $(basename "${img}.xz")"
+    echo -e "\nCompressing $(basename "${img}.xz")\n"
     xz -6 --extreme --force --keep --quiet --threads=0 "${img}"
     rm -f "${img}"
 done

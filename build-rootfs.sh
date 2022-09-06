@@ -280,7 +280,7 @@ umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
 umount -lf ${chroot_dir}/* 2> /dev/null || true
 
 # Tar the entire rootfs
-cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-server-arm64-apalis.rootfs.tar . && cd ..
+cd ${chroot_dir} && XZ_OPT="-0 -T0" tar -cpJf ../ubuntu-20.04-preinstalled-server-arm64-apalis.rootfs.tar.xz . && cd ..
 
 # Mount the temporary API filesystems
 mount -t proc /proc ${chroot_dir}/proc
@@ -517,15 +517,15 @@ umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
 umount -lf ${chroot_dir}/* 2> /dev/null || true
 
 # Tar the entire rootfs
-cd ${chroot_dir} && tar -cpf ../ubuntu-20.04-preinstalled-server-custom-arm64-apalis.rootfs.tar . && cd ..
+cd ${chroot_dir} && XZ_OPT="-0 -T0" tar -cpJf ../ubuntu-20.04-preinstalled-server-custom-arm64-apalis.rootfs.tar.xz . && cd ..
 
-images="ubuntu-20.04-preinstalled-server-arm64-apalis.rootfs.tar ubuntu-20.04-preinstalled-server-custom-arm64-apalis.rootfs.tar"
+images="ubuntu-20.04-preinstalled-server-arm64-apalis.rootfs.tar.xz ubuntu-20.04-preinstalled-server-custom-arm64-apalis.rootfs.tar.xz"
 for rootfs in ${images}; do
     rm -rf ${chroot_dir}
     mkdir -p ${chroot_dir}
 
     # Untar the entire rootfs
-    cd ${chroot_dir} && tar -xpf "../${rootfs}" . && cd ..
+    cd ${chroot_dir} && tar -xpJf "../${rootfs}" . && cd ..
 
     # Mount the temporary API filesystems
     mkdir -p ${chroot_dir}/{proc,sys,run,dev,dev/pts}
@@ -653,5 +653,5 @@ END
     umount -lf ${chroot_dir}/* 2> /dev/null || true
 
     # Tar the entire rootfs
-    cd ${chroot_dir} && tar -cpf "../${rootfs//server/desktop-weston}" . && cd ..
+    cd ${chroot_dir} && XZ_OPT="-0 -T0" tar -cpJf "../${rootfs//server/desktop-weston}" . && cd ..
 done
