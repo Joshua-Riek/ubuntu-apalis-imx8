@@ -8,7 +8,7 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-mkdir -p build && cd build
+mkdir -p images build && cd build
 
 loop=/dev/loop1000
 
@@ -23,7 +23,7 @@ for rootfs in *.rootfs.tar; do
     losetup -d "${loop}" 2> /dev/null || true
 
     # Create an empty disk image
-    img="$(dirname "${rootfs}")/$(basename "${rootfs}" .rootfs.tar).img"
+    img="../images/$(basename "${rootfs}" .rootfs.tar).img"
     truncate -s "$(( $(wc -c < "${rootfs}") / 1024 / 1024 + 2048 + 512 ))M" "${img}"
 
     # Create loop device for disk image
