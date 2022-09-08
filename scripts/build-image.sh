@@ -8,6 +8,7 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+cd "$(dirname -- "$(readlink -f -- "$0")")" && cd ..
 mkdir -p images build && cd build
 
 loop=/dev/loop1000

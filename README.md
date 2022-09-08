@@ -38,7 +38,7 @@ sudo ./build.sh
 To run the Ubuntu 20.04 preinstalled image in a virtual machine:
 
 ```
-sudo ./qemu.sh images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
+sudo ./scripts/qemu.sh images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
 ```
 
 ## Login
@@ -57,7 +57,7 @@ Password: root
 To flash the Ubuntu 20.04 preinstalled image to emmc:
 
 ```
-sudo ./flash.sh images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
+sudo ./scripts/flash.sh images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
 ```
 
 > This assumes that you have connected the carrier board USB OTG port to your Linux host machine and have entered recovery mode on the device. For more information see the Toradex wiki [here](https://developer.toradex.com/linux-bsp/how-to/hardware-related/imx-recovery-mode/).
@@ -76,13 +76,14 @@ xz -dc images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz | sudo dd of=
 
 ```shell
 ubuntu-apalis-imx8
-├── build-kernel.sh     # Build the Linux kernel and Device Tree Blobs
-├── build-imx-boot.sh   # Build U-Boot and the imx boot container
-├── build-rootfs.sh     # Build the root file system
-├── build-image.sh      # Build the Ubuntu preinstalled image
-├── build.sh            # Build the kernel, bootloader, rootfs, and image
-├── flash.sh            # Flash produced disk image to emmc
-└── qemu.sh             # Run produced disk image in a vm
+├── build.sh                # Build the kernel, bootloader, rootfs, and image
+└── scripts
+    ├── build-kernel.sh     # Build the Linux kernel and Device Tree Blobs
+    ├── build-imx-boot.sh   # Build U-Boot and the imx boot container
+    ├── build-rootfs.sh     # Build the root file system
+    ├── build-image.sh      # Build the Ubuntu preinstalled image
+    ├── flash.sh            # Flash produced disk image to emmc
+    └── qemu.sh             # Run produced disk image in a vm
 ```
 
 ## Known Limitations

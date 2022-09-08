@@ -19,6 +19,7 @@ if [ ! -f "${img}" ]; then
     exit 1
 fi
 
+cd "$(dirname -- "$(readlink -f -- "$0")")" && cd ..
 mkdir -p build && cd build && mkdir -p qemu
 
 # Decompress xz archive
