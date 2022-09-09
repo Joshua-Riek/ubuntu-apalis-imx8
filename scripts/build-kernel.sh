@@ -22,12 +22,15 @@ if git apply --check ../../patches/linux-toradex/0001-increase-spi-fifo-size.pat
     git apply ../../patches/linux-toradex/0001-increase-spi-fifo-size.patch
 fi
 
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- distclean
+# Set kernel config 
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
-./scripts/config --set-val CONFIG_DEBUG_INFO n
+./scripts/config --disable CONFIG_DEBUG_INFO
 
+# Set custom kernel version
 echo "-toradex" > .scmversion
+echo "0" > .version
 
+# Compile kernel into deb package
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- DTC_FLAGS="-@" -j "$(nproc)"
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- DTC_FLAGS="-@" -j "$(nproc)" bindeb-pkg
 cd ..
