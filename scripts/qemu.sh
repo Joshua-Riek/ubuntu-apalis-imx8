@@ -25,8 +25,8 @@ mkdir -p build && cd build && mkdir -p qemu
 # Decompress xz archive
 filename="$(basename "${img}")"
 if [ "${filename##*.}" == "xz" ]; then
-    xz -dc -T0 "${img}" > "${filename%.*}"
-    img="$(readlink -f "${filename%.*}")"
+    xz -dc -T0 "${img}" > "${img%.*}"
+    img="$(readlink -f "${img%.*}")"
 fi
 
 # Ensure img file
