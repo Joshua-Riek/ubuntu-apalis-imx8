@@ -24,6 +24,11 @@ if [ ! -d firmware-imx-8.15 ]; then
     rm -f firmware-imx-8.15.bin
 fi
 
+# These env vars can cause issues with chroot
+unset TMP
+unset TEMP
+unset TMPDIR
+
 # Debootstrap options
 arch=arm64
 release=focal

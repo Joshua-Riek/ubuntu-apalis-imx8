@@ -156,10 +156,6 @@ EOF
     umount "${disk}${partition_char}1"
     umount "${disk}${partition_char}2"
 
-    # File system consistency check 
-    fsck.fat -a "${disk}${partition_char}1"
-    fsck.ext4 -pf "${disk}${partition_char}2"
-
     # Remove loop device
     losetup -d "${loop}"
 
