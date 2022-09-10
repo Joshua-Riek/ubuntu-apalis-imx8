@@ -20,7 +20,8 @@ Please install the below packages on your host machine:
 ```
 sudo apt-get install -y build-essential gcc-aarch64-linux-gnu bison \
 qemu-user-static qemu-system-arm qemu-efi u-boot-tools binfmt-support \
-debootstrap flex libssl-dev
+debootstrap flex libssl-dev bc rsync kmod cpio xz-utils fakeroot parted \
+udev dosfstools
 ```
 
 ## Building
@@ -71,20 +72,6 @@ xz -dc images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz | sudo dd of=
 ```
 
 > This assumes that the removable media is added as /dev/sdX and all it’s partitions are unmounted.
-
-## Project Layout
-
-```shell
-ubuntu-apalis-imx8
-├── build.sh                # Build the kernel, bootloader, rootfs, and image
-└── scripts
-    ├── build-kernel.sh     # Build the Linux kernel and Device Tree Blobs
-    ├── build-imx-boot.sh   # Build U-Boot and the imx boot container
-    ├── build-rootfs.sh     # Build the root file system
-    ├── build-image.sh      # Build the Ubuntu preinstalled image
-    ├── flash.sh            # Flash produced disk image to emmc
-    └── qemu.sh             # Run produced disk image in a vm
-```
 
 ## Known Limitations
 
