@@ -3,6 +3,17 @@
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
 
+function cleanup_loopdev {
+    sync --file-system
+    sync
+
+    if [ -b "${loop}" ]; then
+        umount "${loop}"* 2> /dev/null || true
+        losetup -d "${loop}" 2> /dev/null || true
+    fi
+}
+trap cleanup_loopdev EXIT
+
 if [ "$(id -u)" -ne 0 ]; then 
     echo "Please run as root"
     exit 1
@@ -11,23 +22,19 @@ fi
 cd "$(dirname -- "$(readlink -f -- "$0")")" && cd ..
 mkdir -p images build && cd build
 
-loop=/dev/loop1000
-
 for rootfs in *.rootfs.tar.xz; do
     if [ ! -e "${rootfs}" ]; then
         echo "Error: could not find any rootfs tarfile, please run build-rootfs.sh"
         exit 1
     fi
 
-    # Ensure disk image is not mounted
-    umount "${loop}"* 2> /dev/null || true
-    losetup -d "${loop}" 2> /dev/null || true
-
     # Create an empty disk image
     img="../images/$(basename "${rootfs}" .rootfs.tar.xz).img"
-    truncate -s "$(( $(wc -c < "${rootfs}") / 1024 / 1024 + 2048 + 512 ))M" "${img}"
+    size="$(xz -l "${rootfs}" | tail -n +2 | sed 's/,//g' | awk '{print int($5 + 1)}')"
+    truncate -s "$(( size + 2048 + 512 ))M" "${img}"
 
     # Create loop device for disk image
+    loop="$(losetup -f)"
     losetup "${loop}" "${img}"
     disk="${loop}"
 
