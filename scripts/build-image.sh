@@ -72,19 +72,19 @@ for rootfs in *.rootfs.tar.xz; do
 
     sleep 2
 
+    # Generate random uuid for rootfs
+    root_uuid=$(uuidgen)
+
     # Create filesystems on partitions
     partition_char="$(if [[ ${disk: -1} == [0-9] ]]; then echo p; fi)"
     mkfs.vfat -F32 -n efi "${disk}${partition_char}1"
     dd if=/dev/zero of="${disk}${partition_char}2" bs=1KB count=10 > /dev/null
-    mkfs.ext4 -L root "${disk}${partition_char}2"
+    mkfs.ext4 -U "${root_uuid}" -L root "${disk}${partition_char}2"
 
     # Mount partitions
     mkdir -p ${mount_point}/{efi,root} 
     mount "${disk}${partition_char}1" ${mount_point}/efi
     mount "${disk}${partition_char}2" ${mount_point}/root
-
-    # Get rootfs UUID
-    fs_uuid=$(lsblk -ndo UUID "${disk}${partition_char}2")
 
     # Copy the rootfs to root partition
     echo -e "Decompressing $(basename "${rootfs}")\n"
@@ -116,15 +116,15 @@ set timeout=10
 GRUB_RECORDFAIL_TIMEOUT=
 
 menuentry 'Boot' {
-    search --no-floppy --fs-uuid --set=root ${fs_uuid}
-    linux /boot/vmlinuz root=UUID=${fs_uuid} console=ttyLP1,115200 console=tty1 pci=nomsi rootfstype=ext4 rootwait rw
+    search --no-floppy --fs-uuid --set=root ${root_uuid}
+    linux /boot/vmlinuz root=UUID=${root_uuid} console=ttyLP1,115200 console=tty1 pci=nomsi rootfstype=ext4 rootwait rw
     initrd /boot/initrd.img
 }
 EOF
 
     # Uboot script
     cat > ${mount_point}/efi/boot.cmd << EOF
-env set bootargs "root=UUID=${fs_uuid} console=ttyLP1,115200 console=tty1 pci=nomsi rootfstype=ext4 rootwait rw"
+env set bootargs "root=UUID=${root_uuid} console=ttyLP1,115200 console=tty1 pci=nomsi rootfstype=ext4 rootwait rw"
 fatload \${devtype} \${devnum}:1 \${fdt_addr_r} /imx8qm-apalis-v1.1-eval.dtb
 fdt addr \${fdt_addr_r} && fdt resize 0x2000
 fatload \${devtype} \${devnum}:1 \${loadaddr} /overlays/apalis-imx8_hdmi_overlay.dtbo
