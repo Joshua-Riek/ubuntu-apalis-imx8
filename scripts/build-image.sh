@@ -157,6 +157,6 @@ EOF
     losetup -d "${loop}"
 
     echo -e "\nCompressing $(basename "${img}.xz")\n"
-    xz -6 --extreme --force --keep --quiet --threads=0 "${img}"
+    xz -9 --extreme --force --keep --quiet --threads=0 "${img}"
     rm -f "${img}"
 done
