@@ -265,44 +265,11 @@ update-rc.d expand-rootfs.sh remove
 END
 chmod +x ${chroot_dir}/etc/init.d/expand-rootfs.sh
 
-# Update fstab on first boot
-cat > ${chroot_dir}/etc/init.d/update-fstab.sh << 'EOF'
-#!/bin/bash
-### BEGIN INIT INFO
-# Provides: update-fstab.sh
-# Required-Start:
-# Required-Stop:
-# Default-Start: 2 3 4 5 S
-# Default-Stop:
-# Short-Description: Update default fstab
-# Description:
-### END INIT INFO
-
-# Get root block device and remove partition number
-disk="$(findmnt -n -o SOURCE / | sed "s/[0-9]*$//")"
-
-# Write the new fstab entries to the root device
-cat > /etc/fstab << END
-# <device> <dir>       <type>  <options>   <dump>  <fsck>
-${disk}1   /boot/efi   vfat    defaults    0       2
-${disk}2   /           ext4    defaults    0       1
-END
-
-# Remount according to fstab
-mkdir -p /boot/efi
-mount -a
-
-# Remove script
-update-rc.d update-fstab.sh remove
-EOF
-chmod +x ${chroot_dir}/etc/init.d/update-fstab.sh
-
 # Install init script
 cat << EOF | chroot ${chroot_dir} /bin/bash
 set -eE 
 trap 'echo Error: in $0 on line $LINENO' ERR
 
-update-rc.d update-fstab.sh defaults
 update-rc.d expand-rootfs.sh defaults
 EOF
 
