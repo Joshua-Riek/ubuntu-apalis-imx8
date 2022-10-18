@@ -63,14 +63,19 @@ CFG: FB: -vid 0x0525 -pid 0x4031
 # Load bootloader image into RAM
 SDPS: boot -f "${bootloader}"
 
-# Setup uboot environment for flashing emmc
+# Setup uboot environment for flashing the emmc
 FB: ucmd setenv fastboot_dev mmc
 FB: ucmd setenv mmcdev 0
 FB: ucmd mmc dev 0
 
-# Flash the bootloader and os image to emmc
-FB: flash -raw2sparse all "${img}"
+# Flash the bootloader to the emmc boot partition
 FB: flash bootloader "${bootloader}"
+FB: ucmd mmc partconf 0 0 1 0
+
+# Flash the os image to the emmc
+FB: flash -raw2sparse all "${img}"
+
+# Save the default environment variables 
 FB: ucmd env default -a
 FB: ucmd saveenv
 FB: done
