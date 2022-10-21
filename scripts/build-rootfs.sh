@@ -228,6 +228,32 @@ network={
 }
 END
 
+# Serial console resize script
+cat > ${chroot_dir}/etc/profile.d/serial-console.sh << 'END'
+rsz() {
+    if [[ -t 0 && $# -eq 0 ]]; then
+        local IFS='[;' R escape geometry x y
+        echo -en '\e7\e[r\e[999;999H\e[6n\e8'
+        read -rsd R escape geometry
+        x="${geometry##*;}"; y="${geometry%%;*}"
+        if [[ "${COLUMNS}" -eq "${x}" && "${LINES}" -eq "${y}" ]]; then 
+            true
+        else 
+            stty cols "${x}" rows "${y}"
+        fi
+    else
+        echo 'Usage: rsz'
+    fi
+}
+
+case $(/usr/bin/tty) in
+    /dev/ttyAMA0|/dev/ttyS0|/dev/ttyLP1)
+        export LANG=C
+        rsz
+        ;;
+esac
+END
+
 # Expand root filesystem on first boot
 cat > ${chroot_dir}/etc/init.d/expand-rootfs.sh << 'END'
 #!/bin/bash
@@ -275,6 +301,7 @@ EOF
 
 # Remove release upgrade motd
 rm -f ${chroot_dir}/var/lib/ubuntu-release-upgrader/release-upgrade-available
+sed -i 's/^Prompt.*/Prompt=never/' ${chroot_dir}/etc/update-manager/release-upgrades
 
 # Copy the hdmi firmware
 mkdir -p ${chroot_dir}/lib/firmware/imx/hdmi
