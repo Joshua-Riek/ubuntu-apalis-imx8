@@ -578,8 +578,8 @@ trap 'echo Error: in $0 on line $LINENO' ERR
 # Install dependencies
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
 v4l-utils alsa-utils libglib2.0-dev libpango1.0-dev libatk1.0-dev libcairo2 \
-libxcb-composite0 libxcb-xfixes0 libxcursor1 libjpeg62 libxfont2 libtinfo5 \
-libxshmfence1 libxdamage1 x11-xkb-utils libxaw7 libxinerama1 libjpeg-turbo8 \
+libxcb-composite0 libxcb-xfixes0 libxcursor1 libnss3 libxfont2 libtinfo5 \
+libxshmfence1 libxdamage1 x11-xkb-utils libxaw7 libxinerama1 libflac8 \
 libev-dev libevdev2 libevdev-dev libevdev-doc libinput10 libinput-bin \
 libinput-dev libxkbcommon0 libxkbcommon-dev mtdev-tools
 
@@ -654,6 +654,16 @@ xwayland=true
 #size=1920x1080
 background-image=/usr/share/backgrounds/warty-final-ubuntu.png
 background-type=scale
+
+[launcher]
+displayname=terminal
+icon=/usr/share/weston/terminal.png
+path=/usr/bin/weston-terminal
+
+[launcher]
+displayname=chromium
+icon=/usr/share/icons/hicolor/24x24/apps/chromium.png
+path=/usr/lib/chromium/chromium-bin --no-sandbox --use-gl=egl --enable-features=UseOzonePlatform --ozone-platform=wayland --in-process-gpu 
 
 #[output]
 #name=HDMI-A-1
