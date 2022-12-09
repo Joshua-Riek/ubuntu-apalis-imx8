@@ -577,11 +577,21 @@ trap 'echo Error: in $0 on line $LINENO' ERR
 
 # Install dependencies
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
-v4l-utils alsa-utils libglib2.0-dev libpango1.0-dev libatk1.0-dev libcairo2 \
-libxcb-composite0 libxcb-xfixes0 libxcursor1 libnss3 libxfont2 libtinfo5 \
-libxshmfence1 libxdamage1 x11-xkb-utils libxaw7 libxinerama1 libflac8 \
-libev-dev libevdev2 libevdev-dev libevdev-doc libinput10 libinput-bin \
-libinput-dev libxkbcommon0 libxkbcommon-dev mtdev-tools
+v4l-utils alsa-utils libglib2.0-dev libpango1.0-dev libcairo2 libtbb2 \
+libflac8 libxfont2 libpciaccess-dev x11-xkb-utils libxshmfence1 libxinerama1 \
+libev-dev libevdev2 libevdev-dev libevdev-doc libinput-bin libinput-dev \
+libxaw7 libtinfo5 libxkbcommon-dev libnss3 libwebpdemux2 libxslt1.1 libfaad2 \
+libinput10 libpixman-1-0 libxkbcommon0 libpng16-16 libfontconfig1 libxcb-shm0 \
+libxcb-render0 libxrender1 libthai0 libharfbuzz0b libcolord2 libpangocairo-1.0-0 \
+libxcb-composite0 libxcb-xfixes0 libatk-bridge2.0-0 libatk1.0-0 libcurl4 \
+libdc1394-22 libmodplug1 libsoup2.4-1 librsvg2-2 libopenmpt0 libmpcdec6 libzbar0 \
+libbs2b0 libvpx6 libv4l-0 libavfilter7 libvo-aacenc0 libgdk-pixbuf2.0-0 libde265-0 \
+libmms0 libmjpegutils-2.1-0 libvo-amrwbenc0 libwildmidi2 libmpeg2encpp-2.1-0 \
+libvisual-0.4-0 libsrt1 libtag1-dev libcaca0 libavfilter7 libcodec2-0.9 libxdamage1 \
+libshout3 libchromaprint1 libusrsctp1 libjack0 libsbc1 libmplex2-2.1-0 libavc1394-0 \
+libsoundtouch1 libfluidsynth2 libshout3 libdca0 libofa0 libsrtp2-1 libdv4 libkate1 \
+libwebrtc-audio-processing1 libaa1 libnice10 libcurl4-gnutls-dev libdvdnav4 \
+libiec61883-0 libgraphene-1.0-0 libspandsp2
 
 # GPU benchmark tools
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
