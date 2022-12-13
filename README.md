@@ -18,7 +18,7 @@ To setup the build environment for the Ubuntu 20.04 image creation, a Linux host
 Please install the below packages on your host machine:
 
 ```
-sudo apt-get install -y build-essential gcc-aarch64-linux-gnu bison \
+$ sudo apt-get install -y build-essential gcc-aarch64-linux-gnu bison \
 qemu-user-static qemu-system-arm qemu-efi u-boot-tools binfmt-support \
 debootstrap flex libssl-dev bc rsync kmod cpio xz-utils fakeroot parted \
 udev dosfstools uuid-runtime git-lfs
@@ -29,9 +29,9 @@ udev dosfstools uuid-runtime git-lfs
 To checkout the source and build:
 
 ```
-git clone https://github.com/Joshua-Riek/ubuntu-apalis-imx8.git
-cd ubuntu-apalis-imx8
-sudo ./build.sh
+$ git clone https://github.com/Joshua-Riek/ubuntu-apalis-imx8.git
+$ cd ubuntu-apalis-imx8
+$ sudo ./build.sh
 ```
 
 ## Virtual Machine
@@ -39,7 +39,7 @@ sudo ./build.sh
 To run the Ubuntu 20.04 preinstalled image in a virtual machine:
 
 ```
-sudo ./scripts/qemu.sh images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
+$ sudo ./scripts/qemu.sh images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
 ```
 
 ## Login
@@ -58,7 +58,7 @@ Password: root
 To flash the Ubuntu 20.04 preinstalled image to emmc:
 
 ```
-sudo ./scripts/flash.sh images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
+$ sudo ./scripts/flash.sh images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz
 ```
 
 > This assumes that you have connected the carrier board USB OTG port to your Linux host machine and have entered recovery mode on the device. For more information see the Toradex wiki [here](https://developer.toradex.com/linux-bsp/how-to/hardware-related/imx-recovery-mode/).
@@ -68,7 +68,7 @@ sudo ./scripts/flash.sh images/ubuntu-20.04-preinstalled-server-arm64-apalis.img
 To flash the Ubuntu 20.04 preinstalled image to removable media:
 
 ```
-xz -dc images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz | sudo dd of=/dev/sdX bs=4k
+$ xz -dc images/ubuntu-20.04-preinstalled-server-arm64-apalis.img.xz | sudo dd of=/dev/sdX bs=4k
 ```
 
 > This assumes that the removable media is added as /dev/sdX and all it’s partitions are unmounted.
