@@ -80,13 +80,13 @@ for rootfs in *.rootfs.tar.xz; do
 
     # Create filesystems on partitions
     partition_char="$(if [[ ${disk: -1} == [0-9] ]]; then echo p; fi)"
-    mkfs.vfat -i "${boot_uuid}" -F32 -n efi "${disk}${partition_char}1"
+    mkfs.vfat -i "${boot_uuid}" -F32 -n boot "${disk}${partition_char}1"
     dd if=/dev/zero of="${disk}${partition_char}2" bs=1KB count=10 > /dev/null
     mkfs.ext4 -U "${root_uuid}" -L root "${disk}${partition_char}2"
 
     # Mount partitions
-    mkdir -p ${mount_point}/{efi,root} 
-    mount "${disk}${partition_char}1" ${mount_point}/efi
+    mkdir -p ${mount_point}/{boot,root} 
+    mount "${disk}${partition_char}1" ${mount_point}/boot
     mount "${disk}${partition_char}2" ${mount_point}/root
 
     # Copy the rootfs to root partition
@@ -94,10 +94,10 @@ for rootfs in *.rootfs.tar.xz; do
     tar -xpJf "${rootfs}" -C ${mount_point}/root
 
     # Create fstab entries
-    mkdir -p ${mount_point}/root/boot/efi
+    mkdir -p ${mount_point}/root/boot/firmware
     boot_uuid="${boot_uuid:0:4}-${boot_uuid:4:4}"
     echo "# <file system>      <mount point>  <type>  <options>   <dump>  <fsck>" > ${mount_point}/root/etc/fstab
-    echo "UUID=${boot_uuid^^}  /boot/efi      vfat    defaults    0       2" >> ${mount_point}/root/etc/fstab
+    echo "UUID=${boot_uuid^^}  /boot/firmware vfat    defaults    0       2" >> ${mount_point}/root/etc/fstab
     echo "UUID=${root_uuid,,}  /              ext4    defaults    0       1" >> ${mount_point}/root/etc/fstab
 
     # Extract grub arm64-efi to host system 
@@ -107,9 +107,9 @@ for rootfs in *.rootfs.tar.xz; do
     fi
 
     # Install grub 
-    mkdir -p ${mount_point}/efi/efi/boot
-    mkdir -p ${mount_point}/efi/boot/grub
-    grub-install --target=arm64-efi --efi-directory=${mount_point}/efi --boot-directory=${mount_point}/efi/boot --removable --recheck
+    mkdir -p ${mount_point}/boot/boot/boot
+    mkdir -p ${mount_point}/boot/boot/grub
+    grub-install --target=arm64-efi --efi-directory=${mount_point}/boot --boot-directory=${mount_point}/boot/boot --removable --recheck
 
     # Remove grub arm64-efi if extracted
     if [ -L "/usr/lib/grub/arm64-efi" ]; then
@@ -117,7 +117,7 @@ for rootfs in *.rootfs.tar.xz; do
     fi
 
     # Grub config
-    cat > ${mount_point}/efi/boot/grub/grub.cfg << EOF
+    cat > ${mount_point}/boot/boot/grub/grub.cfg << EOF
 insmod gzio
 set background_color=black
 set default=0
@@ -133,7 +133,7 @@ menuentry 'Boot' {
 EOF
 
     # Uboot script
-    cat > ${mount_point}/efi/boot.cmd << EOF
+    cat > ${mount_point}/boot/boot.cmd << EOF
 env set bootargs "root=UUID=${root_uuid} console=ttyLP1,115200 console=tty1 pci=nomsi rootfstype=ext4 rootwait rw"
 fatload \${devtype} \${devnum}:1 \${fdt_addr_r} /imx8qm-apalis-v1.1-eval.dtb
 fdt addr \${fdt_addr_r} && fdt resize 0x2000
@@ -144,20 +144,20 @@ unzip \${ramdisk_addr_r} \${kernel_addr_r}
 ext4load \${devtype} \${devnum}:2 \${ramdisk_addr_r} /boot/initrd.img
 booti \${kernel_addr_r} \${ramdisk_addr_r}:\${filesize} \${fdt_addr_r}
 EOF
-    mkimage -A arm64 -O linux -T script -C none -n "Boot Script" -d ${mount_point}/efi/boot.cmd ${mount_point}/efi/boot.scr
-    rm ${mount_point}/efi/boot.cmd
+    mkimage -A arm64 -O linux -T script -C none -n "Boot Script" -d ${mount_point}/boot/boot.cmd ${mount_point}/boot/boot.scr
+    rm ${mount_point}/boot/boot.cmd
 
     # Copy device tree blobs
-    cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-*.dtb ${mount_point}/efi
+    cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-*.dtb ${mount_point}/boot
 
     # Copy device tree overlays
-    mkdir -p ${mount_point}/efi/overlays
-    cp device-tree-overlays/overlays/apalis-*.dtbo ${mount_point}/efi/overlays
-    cp device-tree-overlays/overlays/display-*.dtbo ${mount_point}/efi/overlays
+    mkdir -p ${mount_point}/boot/overlays
+    cp device-tree-overlays/overlays/apalis-*.dtbo ${mount_point}/boot/overlays
+    cp device-tree-overlays/overlays/display-*.dtbo ${mount_point}/boot/overlays
 
     # Copy hdmi firmware
-    cp firmware-imx-8.15/firmware/hdmi/cadence/dpfw.bin ${mount_point}/efi
-    cp firmware-imx-8.15/firmware/hdmi/cadence/hdmitxfw.bin ${mount_point}/efi
+    cp firmware-imx-8.15/firmware/hdmi/cadence/dpfw.bin ${mount_point}/boot
+    cp firmware-imx-8.15/firmware/hdmi/cadence/hdmitxfw.bin ${mount_point}/boot
 
     sync --file-system
     sync
