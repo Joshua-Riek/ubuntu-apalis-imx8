@@ -292,12 +292,7 @@ END
 chmod +x ${chroot_dir}/etc/init.d/expand-rootfs.sh
 
 # Install init script
-cat << EOF | chroot ${chroot_dir} /bin/bash
-set -eE 
-trap 'echo Error: in $0 on line $LINENO' ERR
-
-update-rc.d expand-rootfs.sh defaults
-EOF
+chroot ${chroot_dir} /bin/bash -c "update-rc.d expand-rootfs.sh defaults"
 
 # Remove release upgrade motd
 rm -f ${chroot_dir}/var/lib/ubuntu-release-upgrader/release-upgrade-available
@@ -593,7 +588,7 @@ libsoundtouch1 libfluidsynth2 libshout3 libdca0 libofa0 libsrtp2-1 libdv4 libkat
 libwebrtc-audio-processing1 libaa1 libnice10 libcurl4-gnutls-dev libdvdnav4 \
 libiec61883-0 libgraphene-1.0-0 libspandsp2 liborc-0.4-0 libcdparanoia0 liba52-0.7.4 \
 libcdio18 libmpeg2-4 libopencore-amrnb0 libopencore-amrwb0 libsidplay1v5 libilmbase24 \
-libopenexr24
+libopenexr24 libxv1 libx11-xcb1
 
 # GPU benchmark tools
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
@@ -705,6 +700,12 @@ END
     for deb in ../debs/*/*.deb; do 
         dpkg -x "${deb}" ${chroot_dir}
     done
+
+    # Create links to shared libraries
+    chroot ${chroot_dir} /bin/bash -c "ldconfig"
+
+    # Gstreamer plugin search path
+    echo GST_PLUGIN_PATH="\"/usr/lib/gstreamer-1.0"\" >> ${chroot_dir}/etc/environment
 
     # Umount the temporary API filesystems
     umount -lf ${chroot_dir}/dev/pts 2> /dev/null || true
