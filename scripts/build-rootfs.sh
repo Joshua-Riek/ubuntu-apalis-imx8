@@ -298,6 +298,9 @@ chroot ${chroot_dir} /bin/bash -c "update-rc.d expand-rootfs.sh defaults"
 rm -f ${chroot_dir}/var/lib/ubuntu-release-upgrader/release-upgrade-available
 sed -i 's/^Prompt.*/Prompt=never/' ${chroot_dir}/etc/update-manager/release-upgrades
 
+# Set term for serial tty
+sed -i '/ExecStart.*/i Environment="TERM=linux"' ${chroot_dir}/lib/systemd/system/serial-getty@.service
+
 # Copy the hdmi firmware
 mkdir -p ${chroot_dir}/lib/firmware/imx/hdmi
 cp firmware-imx-8.15/firmware/hdmi/cadence/* ${chroot_dir}/lib/firmware/imx/hdmi
