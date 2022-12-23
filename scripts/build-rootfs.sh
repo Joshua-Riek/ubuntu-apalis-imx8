@@ -173,6 +173,17 @@ echo -e "root\nroot" | passwd ubuntu
 echo -e "root\nroot" | passwd
 EOF
 
+# Create swapfile
+cat << EOF | chroot ${chroot_dir} /bin/bash
+set -eE 
+trap 'echo Error: in $0 on line $LINENO' ERR
+
+dd if=/dev/zero of=/tmp/swapfile bs=1024 count=2097152
+chmod 600 /tmp/swapfile
+mkswap /tmp/swapfile
+mv /tmp/swapfile /swapfile
+EOF
+
 # DNS
 echo "nameserver 8.8.8.8" > ${chroot_dir}/etc/resolv.conf
 
