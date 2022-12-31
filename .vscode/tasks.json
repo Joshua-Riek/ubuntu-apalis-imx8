@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "echo",
+            "label": "Build Ubuntu for Apalis iMX8",
             "type": "shell",
             "command": "sudo ./build.sh",
             "problemMatcher": [],
