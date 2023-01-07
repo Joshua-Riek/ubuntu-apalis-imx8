@@ -136,7 +136,7 @@ EOF
     # Uboot script
     cat > ${mount_point}/boot/boot.cmd << EOF
 env set bootargs "root=UUID=${root_uuid} console=ttyLP1,115200 console=tty1 pci=nomsi rootfstype=ext4 rootwait rw"
-fatload \${devtype} \${devnum}:1 \${fdt_addr_r} /imx8qm-apalis-v1.1-eval.dtb
+fatload \${devtype} \${devnum}:1 \${fdt_addr_r} /imx8qm-apalis-v1.1-ixora-v1.2.dtb
 fdt addr \${fdt_addr_r} && fdt resize 0x2000
 fatload \${devtype} \${devnum}:1 \${loadaddr} /overlays/apalis-imx8_hdmi_overlay.dtbo
 fdt apply \${loadaddr}
