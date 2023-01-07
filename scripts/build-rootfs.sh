@@ -313,6 +313,9 @@ chmod +x ${chroot_dir}/etc/init.d/expand-rootfs.sh
 # Install init script
 chroot ${chroot_dir} /bin/bash -c "update-rc.d expand-rootfs.sh defaults"
 
+# Set term for serial tty
+sed -i '/ExecStart.*/i Environment="TERM=linux"' ${chroot_dir}/lib/systemd/system/serial-getty@.service
+
 # Remove release upgrade motd
 rm -f ${chroot_dir}/var/lib/ubuntu-release-upgrader/release-upgrade-available
 sed -i 's/^Prompt.*/Prompt=never/' ${chroot_dir}/etc/update-manager/release-upgrades
