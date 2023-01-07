@@ -146,7 +146,6 @@ ext4load \${devtype} \${devnum}:2 \${ramdisk_addr_r} /boot/initrd.img
 booti \${kernel_addr_r} \${ramdisk_addr_r}:\${filesize} \${fdt_addr_r}
 EOF
     mkimage -A arm64 -O linux -T script -C none -n "Boot Script" -d ${mount_point}/boot/boot.cmd ${mount_point}/boot/boot.scr
-    rm ${mount_point}/boot/boot.cmd
 
     # Copy device tree blobs
     cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-*.dtb ${mount_point}/boot
