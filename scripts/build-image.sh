@@ -149,6 +149,7 @@ EOF
 
     # Copy device tree blobs
     cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qm-apalis-*.dtb ${mount_point}/boot
+    cp linux-toradex/arch/arm64/boot/dts/freescale/imx8qp-apalis-*.dtb ${mount_point}/boot
 
     # Copy device tree overlays
     mkdir -p ${mount_point}/boot/overlays
