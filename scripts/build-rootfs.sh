@@ -314,7 +314,9 @@ chmod +x ${chroot_dir}/etc/init.d/expand-rootfs.sh
 chroot ${chroot_dir} /bin/bash -c "update-rc.d expand-rootfs.sh defaults"
 
 # Set term for serial tty
-sed -i '/ExecStart.*/i Environment="TERM=linux"' ${chroot_dir}/lib/systemd/system/serial-getty@.service
+mkdir -p ${chroot_dir}/lib/systemd/system/serial-getty@.service.d
+echo "[Service]" > ${chroot_dir}/lib/systemd/system/serial-getty@.service.d/10-term.conf
+echo "Environment=TERM=linux" >> ${chroot_dir}/lib/systemd/system/serial-getty@.service.d/10-term.conf
 
 # Remove release upgrade motd
 rm -f ${chroot_dir}/var/lib/ubuntu-release-upgrader/release-upgrade-available
