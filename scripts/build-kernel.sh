@@ -27,6 +27,7 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
 ./scripts/config --disable CONFIG_DEBUG_INFO
 
 # Set custom kernel version
+./scripts/config --enable CONFIG_LOCALVERSION_AUTO
 echo "-toradex" > .scmversion
 echo "0" > .version
 
