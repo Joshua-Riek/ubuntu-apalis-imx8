@@ -364,10 +364,11 @@ libmms0 libmjpegutils-2.1-0 libvo-amrwbenc0 libwildmidi2 libmpeg2encpp-2.1-0 \
 libvisual-0.4-0 libsrt1 libtag1-dev libcaca0 libavfilter7 libcodec2-0.9 libxdamage1 \
 libshout3 libchromaprint1 libusrsctp1 libjack0 libsbc1 libmplex2-2.1-0 libavc1394-0 \
 libsoundtouch1 libfluidsynth2 libshout3 libdca0 libofa0 libsrtp2-1 libdv4 libkate1 \
-libwebrtc-audio-processing1 libaa1 libnice10 libcurl4-gnutls-dev libdvdnav4 \
+libwebrtc-audio-processing1 libaa1 libnice10 libcurl4-gnutls-dev libdvdnav4 libnspr4 \
 libiec61883-0 libgraphene-1.0-0 libspandsp2 liborc-0.4-0 libcdparanoia0 liba52-0.7.4 \
 libcdio18 libmpeg2-4 libopencore-amrnb0 libopencore-amrwb0 libsidplay1v5 libilmbase24 \
-libopenexr24 libxv1 libx11-xcb1
+libopenexr24 libxv1 libx11-xcb1 libtheora0 nettle-bin nettle-dev googletest mpg123 \
+libsoup2.4-dev libassimp5 
 
 # GPU benchmark tools
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
