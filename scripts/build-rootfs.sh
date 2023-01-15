@@ -406,6 +406,7 @@ StandardInput=tty
 StandardError=journal
 
 # Set environment and XDG runtime
+Environment="DISPLAY=:0"
 Environment="XDG_RUNTIME_DIR=/run/user/0"
 EnvironmentFile=-/etc/default/weston
 ExecStartPre=/bin/mkdir -p \${XDG_RUNTIME_DIR}
@@ -431,6 +432,7 @@ cat > ${chroot_dir}/etc/xdg/weston/weston.ini << EOF
 idle-time=0
 use-g2d=1
 xwayland=true
+backend=drm-backend.so
 
 [shell]
 #size=1920x1080
