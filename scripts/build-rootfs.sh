@@ -427,6 +427,8 @@ dpkg --force-overwrite --no-debsig --install /tmp/debs/wayland-protocols/*.deb
 dpkg --force-overwrite --no-debsig --install /tmp/debs/imx-gpu-viv/*.deb
 dpkg --force-overwrite --no-debsig --install /tmp/debs/imx-dpu-g2d/*.deb
 dpkg --force-overwrite --no-debsig --install /tmp/debs/imx-gpu-sdk/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/libgpuperfcnt/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/gputop/*.deb
 dpkg --force-overwrite --no-debsig --install /tmp/debs/xserver-xorg/*.deb
 dpkg --force-overwrite --no-debsig --install /tmp/debs/xterm/*.deb
 dpkg --force-overwrite --no-debsig --install /tmp/debs/weston/*.deb
