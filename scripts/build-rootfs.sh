@@ -383,7 +383,7 @@ libwebrtc-audio-processing1 libaa1 libnice10 libcurl4-gnutls-dev libdvdnav4 libn
 libiec61883-0 libgraphene-1.0-0 libspandsp2 liborc-0.4-0 libcdparanoia0 liba52-0.7.4 \
 libcdio18 libmpeg2-4 libopencore-amrnb0 libopencore-amrwb0 libsidplay1v5 libilmbase24 \
 libopenexr24 libxv1 libx11-xcb1 libtheora0 nettle-bin nettle-dev googletest mpg123 \
-libsoup2.4-dev libassimp5 
+libsoup2.4-dev libassimp5 gtk-update-icon-cache hicolor-icon-theme
 
 # GPU benchmark tools
 DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
@@ -395,6 +395,57 @@ ubuntu-wallpapers
 
 # Clean package cache
 apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
+EOF
+
+# Remove drm, mesa, and wayland
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libdrm*
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/mesa-egl
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libglapi.so.0*
+rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libwayland-*
+
+# Copy GPU accelerated packages to the rootfs
+cp -r ../debs ${chroot_dir}/tmp
+
+# Install GPU accelerated packages
+cat << EOF | chroot ${chroot_dir} /bin/bash
+set -eE 
+trap 'echo Error: in $0 on line $LINENO' ERR
+
+# Install packages
+dpkg --force-overwrite --no-debsig --install /tmp/debs/libfmt/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/libimxdmabuffer/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/libvulkan/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/libdrm/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/libepoxy/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/libjpeg/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/devil/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/mesa/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/imx-codec/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/imx-parser/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/wayland/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/wayland-protocols/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/imx-gpu-viv/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/imx-dpu-g2d/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/imx-gpu-sdk/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/xserver-xorg/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/xterm/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/weston/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/libwebp/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/chromium-ozone-wayland/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/gstreamer1.0/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/gstreamer1.0-plugins-base/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/gstreamer1.0-plugins-bad/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/gstreamer1.0-plugins-good/*.deb
+dpkg --force-overwrite --no-debsig --install /tmp/debs/imx-gst1.0-plugin/*.deb
+
+# Hold packages
+for i in /tmp/debs/*/*.deb; do
+    apt-mark hold "\$(basename "\${i}" | cut -d "_" -f1)"
+done
+
+# Clean package cache
+apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
+rm -rf /tmp/*
 EOF
 
 # Service to start weston
@@ -481,17 +532,6 @@ path=/usr/lib/chromium/chromium-bin --no-sandbox --use-gl=egl --enable-features=
 [screen-share]
 command=@bindir@/weston --backend=rdp-backend.so --shell=fullscreen-shell.so --no-clients-resize
 EOF
-
-# Remove drm, mesa, and wayland
-rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libdrm*
-rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/mesa-egl
-rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libglapi.so.0*
-rm -rf ${chroot_dir}/usr/lib/aarch64-linux-gnu/libwayland-*
-
-# Extract and install GPU accelerated packages
-for deb in ../debs/*/*.deb; do 
-    dpkg -x "${deb}" ${chroot_dir}
-done
 
 # Create links to shared libraries
 chroot ${chroot_dir} /bin/bash -c "ldconfig"
