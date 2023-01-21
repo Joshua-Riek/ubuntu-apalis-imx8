@@ -139,7 +139,7 @@ apt-get -y autoremove && apt-get -y clean && apt-get -y autoclean
 EOF
 
 # Grab the kernel version
-kernel_version="$(cat linux-toradex/include/generated/utsrelease.h | sed -e 's/.*"\(.*\)".*/\1/')"
+kernel_version="$(sed -e 's/.*"\(.*\)".*/\1/' linux-toradex/include/generated/utsrelease.h)"
 
 # Install kernel, modules, and headers
 cat << EOF | chroot ${chroot_dir} /bin/bash
