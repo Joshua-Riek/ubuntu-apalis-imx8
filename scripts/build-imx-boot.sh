@@ -56,7 +56,7 @@ cd ..
 
 # Download and build the boot container
 if [ ! -d imx-mkimage ]; then
-    git clone --depth=1 --progress -b imx_5.4.70_2.3.0 https://source.codeaurora.org/external/imx/imx-mkimage/
+    git clone --depth=1 --progress -b imx_5.4.70_2.3.0 https://github.com/nxp-imx/imx-mkimage/
 fi
 cd imx-mkimage
 cp ../imx-seco-3.8.1/firmware/seco/mx8qmb0-ahab-container.img iMX8QM/mx8qmb0-ahab-container.img
