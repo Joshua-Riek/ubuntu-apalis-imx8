@@ -30,7 +30,7 @@ for rootfs in *.rootfs.tar.xz; do
 
     # Create an empty disk image
     img="../images/$(basename "${rootfs}" .rootfs.tar.xz).img"
-    size="$(xz -l "${rootfs}" | tail -n +2 | sed 's/,//g' | awk '{print int($5 + 1)}')"
+    size="$(xz --robot -l "${rootfs}" | tail -n +2 | awk '{print int($5/1048576 + 1)}')"
     truncate -s "$(( size + 2048 + 512 ))M" "${img}"
 
     # Create loop device for disk image
