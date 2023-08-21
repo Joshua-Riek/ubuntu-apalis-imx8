@@ -29,7 +29,7 @@ udev dosfstools uuid-runtime grub-pc git-lfs
 To checkout the source and build:
 
 ```
-git clone https://github.com/Joshua-Riek/ubuntu-apalis-imx8.git
+git clone --progress -b focal https://github.com/aopenna/ubuntu-apalis-imx8.git
 cd ubuntu-apalis-imx8
 sudo ./build.sh
 ```
